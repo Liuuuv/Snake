@@ -1,0 +1,238 @@
+\documentclass{article}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{enumitem}
+\geometry{a4paper}
+\usepackage[francais]{babel}
+
+\usepackage{hyperref}
+
+
+
+
+\newtheorem{definition}{Définition}[section]
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{property}{Propriété}[section]
+
+
+
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+\title{Avancement}
+\author{Olivier Y.}
+\date{01/02/2024}
+
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+
+
+
+
+
+\section{Généralités}
+
+Tous les graphes $G$ considérés seront supposés non orientés, sans boucle ni arête multiple.
+
+\begin{definition}
+On note \textbf{HCP (Hamiltonian Cycle Problem)} la problématique de trouver un cycle Hamiltonien dans un graphe ou de savoir qu'il n'en n'existe pas.
+\end{definition}
+
+blabla
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit que $G$ est un \textbf{graphe grille} (de dimension 2) si c'est un sous-graphe induit par $\mathbb{R}^{2}$.
+Un graphe grille rectangulaire est en particulier le produit cartésien de deux graphes chemins.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit qu'un graphe $H=(V',E')$ est un \textbf{sous-graphe} de $G=(V,E)$ si $V' \subset V$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+Pour $k \in \mathbb{N}$, on dit que $G$ est \textbf{k-régulier} si tous ses sommets sont de degré $k$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit que $G$ est \textbf{biparti} s'il existe une partition $V=V_{1} \sqcup V_{2}$ vérifiant que chaque arête possède une extrémité dans $V_{1}$ et l'autre dans $V_{2}$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+Pour $k \in \mathbb{N}$, on dit qu'un graphe $F$ est un \textbf{k-facteur} de G si c'est un sous-graphe couvrant k-régulier induit par $G$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe planaire. On appelle \textbf{graphe dual} de $G$ le graphe $D_{G}=(V',E')$ vérifiant qu'à chaque arête $v \in V'$ est associée une face de $G$ et que pour tout couple $(v_{1},v_{2}) \in V'^{2}$, $\{v_{1},v_{2}\} \in E'$ si les faces correspondantes à $v_{1}$ et $v_{2}$ ont une arête en commun.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe. On appelle \textbf{graphe adjoint} de $G$ le graphe $L_{G}=(V',E')$ vérifiant que $V'=E$ et que pour tout couple $(v_{1},v_{2}) \in V'^{2}$, $\{v_{1},v_{2}\} \in E'$ si les arêtes associées dans $G$ ont une extrémité commune.
+\end{definition}
+
+
+\part{Théorie générale}
+
+\section{Matrices}
+\subsection{Matrices stochastiques}
+
+\begin{definition}
+Soit $G$ un graphe.
+Soit $P=(p_{ij})_{1 \le i,j \le n} \in M_{n}(\mathbb{R})$.
+
+On dit que P est \textbf{doublement stochastique} associée à $G$ si elle vérifie:
+
+\begin{itemize}
+\item $\forall i \in [\![1,n]\!] \; \sum\limits_{j=1}^{n}p_{ij}=1$
+\item  $\forall j \in [\![1,n]\!] \; \sum\limits_{i=1}^{n}p_{ij}=1$
+\item $\forall (i,j) \in [\![1,n]\!]^2 \; p_{ij} \ge 0$
+\item  $\forall (i,j) \in [\![1,n]\!]^2 \; \{i,j\} \notin V \implies p_{ij}=0$
+\end{itemize}
+
+On note $\mathcal{D}\mathcal{S}$ l'ensemble des matrices doublement stochastiques induit par $G$.
+\end{definition}
+
+On peut résoudre le HCP dans un graphe $G$  via problème d'optimisation (\cite{Haythorpe2010FindingHC,Ejov2008DeterminantsAL}, un peu \cite{Ejov2009ConsistentBO}):
+
+\[
+\min_{P \in \mathcal{D}\mathcal{S}} -det(I_{n}-P+\frac{1}{n}J) \quad \text{où $J \in M_{n}(\mathbb{R})$ est constituée uniquement de 1}
+\]
+
+Les chaines de Markov peuvent être utiles pour le HCP: \cite{Haythorpe2013MarkovCB}, \cite{Ejov2009ConsistentBO}, \cite{Filar2007ControlledMC}
+
+
+\subsection{Matrices d'adjacence}
+Dans toute cette section, on fixe un graphe $G$ non orienté, sans boucle ni arête multiple. On note $n=\# V$ le nombre de sommets de $G$.
+
+\begin{definition}
+On définit la \textbf{matrice d'adjacence} $M_G=(m_{ij})_{1 \le i,j \le n}$ de $G$ par:
+
+\[
+\forall (i,j) \in [\![1,n]\!]^2 \; m_{ij}=
+	\begin{cases}
+	1 \; \text{si $\{i,j\} \in V$}\\
+	0 \; \text{sinon}
+	\end{cases}
+\]
+\end{definition}
+
+Une matrice de permutation $P \in M_{n}(\{0,1\})$ est la matrice d'adjacence d'un cycle Hamiltonien si et seulement si $\chi _{P} = X^{n}-1$ (\cite{Ejov2006SOLVINGTH})
+
+\begin{definition}
+On définit (avec abus) la \textbf{matrice d'adjacence symbolique} $X_{G}$ de G par:
+
+\[
+\forall (i,j) \in [\![1,n]\!]^2 \; [X_{G}]_{ij}=
+	\begin{cases}
+	x_{ij} \; \text{si $\{i,j\} \in V$}\\
+	0 \; \text{sinon}
+	\end{cases}
+\text{où les $x_{ij} \in \{0,1\}$ sont quelconques}
+\]
+\end{definition}
+
+Le HCP est équivalent à chercher les $x_{ij} \in \mathbb{R}$, $(i,j) \in [\![1,n]\!]^2$, qui vérifient (\cite{Ejov2006SOLVINGTH}):
+
+\begin{itemize}
+\item $\forall (i,j) \in [\![1,n]\!]^2 \; x_{ij}(1-x_{ij})=0$ \quad (pour qu'ils soient dans $\{0,1\}$)
+\item $\forall i \in [\![1,n]\!] \; \sum\limits_{j=1}^{n}x_{ij}=1$ \quad (la somme sur chaque ligne est égale à 1)
+\item $\forall j \in [\![1,n]\!] \; \sum\limits_{i=1}^{n}x_{ij}=1$ \quad (la somme sur chaque colonne est égale à 1)
+\item $\chi_{X_{G}} - X^{n}+1=0$ \quad (pour que $X_{G}$ soit associé à un cycle Hamiltonien)
+\end{itemize}
+
+Remarque: Les 3 premières conditions traduisent que $X_{G}$ est une matrice de permutation et la dernière assure que la permutation associée soit un n-cycle. En effet pour $\sigma \in S_{n}$ une permutation, en notant $P_{\sigma}=(\delta_{i,\sigma (j)})_{(i,j)\in [\![1,n]\!]^{2}}$ sa matrice associée, on a :
+
+\[
+\chi_{P_{\sigma}}=\prod\limits_{k=1}^{n}(X^{k}-1)^{C_{k}} \quad \text{où les $C_{i}$ ($i \in [\![1,n]\!]$) sont le nombre de i-cycles dans $\sigma$}
+\]
+
+
+
+
+Les différents facteurs du déterminant symbolique ($det(X_{G})$) encodent toutes les partitions de G en cycles orientés à sommets disjointes (2-facteurs orientés) (\cite{Ejov2006SOLVINGTH}) (et donc potentiellement un cycle Hamiltonien s'il existe, dans ce cas il y en aura ``deux fois trop'').
+
+\subsection{Matrice Laplacienne}
+Dans toute cette section, on note $n=\# V$ le nombre de sommets de G
+
+\begin{definition}
+On définit la \textbf{matrice Laplacienne} $L_{G}$ de $G$ par $L_{G}=D_{G}-M_{G}$ où $D_{G}=Diag((deg(i))_{i \in [\! [1,n]\! ]})$ et $M_{G}$ est la matrice d'adjacence de G.
+\end{definition}
+
+\begin{property}
+Le nombre d'arbres couvrants de $G$ est égal, au signe près, à n'importe quel cofacteur de $L_{G}$
+\end{property}
+
+
+
+\section{SAT}
+Déterminer l'existence d'un cycle Hamiltonien est équivalent à un problème SAT (\cite{Plotnikov2001ALM})
+
+\section{Faits supplémentaires}
+Pour $A,B \in M_{n}(\mathbb{R})$ de valeurs propres respectivement $\alpha_{1},...,\alpha_{n}$ et $\beta_{1},...,\beta_{n}$ comptés avec multiplicité, on a que la somme de Kronecker de A,B est de valeurs propres $\alpha_{i}+\beta_{j}$ pour $(i,j)$ parcourant $[\![1,n]\!]^2$
+
+Si $G$ est un graphe grille rectangulaire sans trou de taille $(n_{1},n_{2})$, alors $\#V=n_{1}n_{2}$ et $\#E=2n(n-1)$
+
+
+
+
+\part{Snake}
+Dans toute cette partie, on suppose $G=(V,E)$ est un graphe grille de dimension $(n,n)$. Donc $\# V=n^{2}$.
+
+\section{Comment être certain de gagner ?}
+Sécurité : configuration permettant de suivre une stratégie gagnante si voulu.
+On prend comme sécurité le fait d'avoir le corps du serpent et sa tête sur un cycle Hamiltonien
+
+\section{Génération de cycle Hamiltonien}
+On peut générer un cycle Hamiltonien dans G en générant un arbre couvrant dans le graphe grille de dimensions $(\frac{n}{2},\frac{n}{2})$ associé. On en fait ensuite le contour dans $G$. Avec cette méthode, on ne peut générer \textbf{COMBIEN DE CYCLES ON PEUT GENERER COMME CA? COMPORTEMENT ASYMPTOTIQUE? COMBIEN PAR RAPPORT AU NOMBRE DE CYCLES HAMILTONIENS EXISTANTS?} 
+
+\section{Méthodes de résolution de Snake}
+
+Lorsque l'on gagne le jeu on est sur un cycle Hamiltonien.
+
+\subsection{Suivi de cycle Hamiltonien}
+Victoire assurée, mais en \textbf{???????} déplacements (très long)
+
+\subsection{Plus court chemin}
+Le plus rapide, mais la victoire n'est pas assurée
+
+\subsection{Monte Carlo tree search}
+Ne peut pas marcher car trop de possibilités très différentes.
+
+\subsection{Raccourcis sur cycle Hamiltonien}
+Victoire assurée, mais converge trop vite vers un simple suivi de cycle Hamiltonien. Il faut prendre de la marge.
+
+\subsection{Plus court chemin sur cycle Hamiltonien dynamique}
+Victoire non assurée. Souvent bloqué dans des boucles virtuelles.
+
+\subsection{Plus court chemin dans graphe orienté}
+Victoire assurée si et seulement si on fait des détours si la grille est coupée en deux
+
+\subsection{Plus court chemin avec vérification post-déplacement}
+Victoire non assurée. Si les pommes apparaissement devant la tête du serpent, on perd. Cela n'est pas un sécurité.
+
+
+
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{citations}
+
+\end{document}

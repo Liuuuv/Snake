@@ -1,0 +1,8 @@
+vert_clair=(150,250,150)
+vert_fonce=(105,235,125)
+bleu=(0,0,255)
+bleu_clair=(100,100,255)
+noir=(0,0,0)
+blanc=(255,255,255)
+rouge=(255,0,0)
+rouge_fonce=(160,0,0)

@@ -1,0 +1,1135 @@
+\documentclass[french,a4paper]{article}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{romannum}
+
+\usepackage[francais]{babel}
+
+\usepackage{hyperref}
+
+\usepackage[ruled,lined]{algorithm2e} %pour pseudocode
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+
+\geometry{a4paper}
+\pagestyle{headings}
+
+
+\newtheorem{definition}{Définition}[section]
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{property}{Propriété}[section]
+\newtheorem{proof}{Preuve}[section]
+\newtheorem{remark}{Remarque}[section]
+\newtheorem{corollary}{Corollaire}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+
+
+
+
+
+
+\title{Avancement Snake}
+\author{Olivier Y.}
+\date{01/02/2024}
+
+
+\begin{document}
+\pagenumbering{arabic}
+
+\maketitle
+\begin{abstract}
+Dans ce document, nous étudierons l'Hamiltonicité de certains graphes, en particulier des graphes grilles carrés et nous y rechercherons des cycles Hamiltoniens. Nous verrons aussi différentes méthodes de résolution du jeu Snake que l'on comparera pour se rapprocher de la résolution la plus optimale possible (si elle existe).
+\end{abstract}
+
+
+\tableofcontents
+
+
+
+
+
+citer et vérifier que toutes les citations dans le .bib sont utilisées
+
+\newpage
+\part{Préliminaires}
+
+
+
+\section{Présentation}
+Snake est un jeu vidéo joué seul sur une grille carrée de dimensions $(n,n)$ où $n \in \mathbb{N}^*$. Le temps est discrétisé de manière régulière. Le joueur contrôle le mouvement de la tête du serpent. Il peut la déplacer dans trois directions orthogonales à chaque pas de temps. Au démarrage du jeu, la position de la tête du serpent est choisie arbitrairement et le serpent n'occupe qu'une case. A chaque instant, une unique pomme est présente sur le terrain, elle occupe une case. Lorsqu'une pomme est mangée par la tête du serpent, une nouvelle apparaît de manière aléatoire et uniforme sur la grille. Une pomme ne peut apparaître sur le corps du serpent. Le corps du serpent suit exactement la tête du serpent et s'allonge d'une unité lorsque la tête du serpent mange une pomme. La tête du serpent ne peut sortir de la grille ni intersecter avec son corps, auquel cas la partie est perdue. La partie est gagnée lorsque le serpent en entier occupe toute la grille, ou de manière équivalente, lorsqu'une nouvelle pomme ne peut apparaître sur la grille.
+
+L'environnement de jeu est alors un environnement stochastique dû à l'aléatoire des positions d'apparition des pommes.
+
+\paragraph{Terminologie}
+On distingue deux parties disjointes du serpent, on appelle tête du serpent la case là plus récente qu'il vient d'atteindre, et sa queue (ou son corps) le reste des cases qu'il occupe à un moment donné.
+
+\paragraph{Conventions}
+Lorsque le serpent mange une pomme, il s'allonge à l'image suivante.
+
+Le serpent apparaît initialement sur la case la plus en haut à gauche de la grille avec un score de 0 et une longueur de 1 (c'est-à-dire qu'il n'est constitué que d'une tête). Le jeu est alors gagné lorsque le serpent a mangé $n^2$ pommes i.e. lorsque son score est de $n^2$.
+
+\section{Quelques définitions}
+
+Tous les graphes $G$ considérés seront supposés non orientés, sans boucle ni arête multiple sauf si reprécision.
+
+\subsection{Graphes}
+\begin{definition}
+On appelle \textbf{graphe non orienté} tout couple $G=(V,E)$ pour $V$ un ensemble et $E$ une partie de $\{\{v_1,v_2\} \, | \, v_1,v_2 \in V \land v_1 \neq v_2\}$.
+
+
+On appelle \textbf{sommets} les éléments de $V$ et $V$ \textbf{l'ensemble des sommets} de $G$.
+
+On appelle \textbf{arêtes} les éléments de $E$ et $E$ \textbf{l'ensemble des arêtes} de $G$.
+
+On note $\Omega$ l'ensemble des graphes non orientés.
+\end{definition}
+
+
+\begin{definition}
+On appelle \textbf{graphe orienté} tout couple $G=(V,E)$ pour $V$ un ensemble et $E$ une partie de $\{(v_1,v_2) \, | \, v_1,v_2 \in V \land v_1 \neq v_2\}$.
+
+On appelle \textbf{sommets} les éléments de $V$ et $V$ \textbf{l'ensemble des sommets} de $G$.
+
+On appelle \textbf{arc} les éléments de $E$ et $E$ \textbf{l'ensemble des arcs} de $G$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe orienté ou non.
+On appelle \textbf{ordre} de $G$ l'entier $\#V$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+Pour $(v_1,v_2) \in V^2$, si $\{v_1,v_2\} \in E$ alors on note $v_1 \sim_G v_2$ pour désigner que $v_1$ et $v_2$ sont \textbf{reliés} (ou \textbf{voisins} ou encore \textbf{adjacents}) dans $G$. S'il n'y a pas d'ambiguïté, on notera simplement $v_1 \sim v_2$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+Pour $v \in V$, on appelle \textbf{degré} de $v$, noté $deg(v)$, l'entier $deg(v)=\#\{v' \in V \, | \, \{v,v'\} \in E\}$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On dit qu'un graphe $H=(V',E')$ est un \textbf{sous-graphe} de $G$ si $V' \subseteq V$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On dit qu'un sous graphe $H=(V',E')$ de $G$ est un \textbf{sous-graphe couvrant} de $G$ si $V' = V$.
+\end{definition}
+
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On dit qu'un sous graphe $H=(V',E')$ de $G$ est un \textbf{sous-graphe induit} de $G$ si pour tout $(v_1,v_2) \in V'^2$, $v_1 \sim_H v_2$ si et seulement si $v_1 \sim_G v_2$. Dans ce cas $E'$ peut être obtenu en partant de $E$ et en y enlevant les arêtes qui ont une extrémité dans $V \setminus V'$.
+\end{definition}
+
+\subsection{Indicages}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On appelle \textbf{indicage} de $G$ toute bijection $\nu : V \to [\![1,\#V]\!]$.
+\end{definition}
+
+\begin{definition}
+Soient $G=(V,E)$ un graphe.
+Soit $\nu : V \to [\![1,\#V]\!]$ un indicage de $G$. On appelle \textbf{graphe indicé} par $\nu$ de $G$ le graphe, noté $G_{\nu}=(V',E')$, vérifiant :
+
+$\begin{cases} V'=[\![1,\#V]\!] \\ E'=\{\{\nu(v_1),\nu(v_2) \, | \, \{v_1,v_2\} \in E\} \end{cases}$
+\end{definition}
+
+\subsection{Graphes isomorphes}
+\begin{definition}
+Soient $G=(V,E)$ et $G'=(V',E')$ deux graphes.
+On dit que $G$ et $G'$ sont \textbf{isomorphes} s'il existe une bijection $\varphi : V \to V'$ vérifiant:
+\[
+\forall (v_1,v_2) \in V^2 \quad \{v_1,v_2\} \in V \iff \{ \varphi(v_1),\varphi(v_2) \} \in V'^2
+\]
+
+Dans ce cas, on note $G \cong G'$.
+\end{definition}
+
+\begin{property}
+La relation binaire $\cong$ est une relation d'équivalence.
+\end{property}
+
+\begin{remark}
+On traîte alors tous les graphes de la même classe d'équivalence pour la relation $\cong$ comme égaux à l'exception des graphes indicés.
+\end{remark}
+
+\begin{property}
+Soit $G$ un graphe.
+Soient $\nu$ un indicage de $G$. Alors $G \cong G_{\nu}$.
+\end{property}
+
+\begin{property}
+Soit $G=(V,E)$ un graphe.
+Soient $\nu_1, \nu_2$ deux indicages de $G$. Alors $G_{\nu_1} \cong G_{\nu_2}$.
+\end{property}
+
+\subsection{Éléments de graphes}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe orienté ou non.
+Pour $k \in \mathbb{N}^*$, on appelle \textbf{chemin} de $G$ de longueur $k$ tout $k$-uplets $(p_1,\dots,p_k) \in V^k$ vérifiant $\forall (i,j) \in [\![1,k]\!]^2 \quad i \neq j \implies p_i \neq p_j$ et $\forall i \in [\![1,k-1]\!] \quad \{p_i,p_{i+1}\} \in E$.
+\end{definition}
+
+\begin{remark}
+Un sommet quelconque est un chemin.
+\end{remark}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe orienté ou non.
+Pour $k \in \mathbb{N}^*$, on appelle \textbf{cycle} de $G$ de longueur $k$ tout chemin $(p_1,\dots,p_k) \in V^k$ vérifiant $\{p_1,p_k\} \in E$.
+\end{definition}
+
+On définit la notion d'inclusion de tuples :
+\begin{definition}
+Soit $V$ un ensemble.
+Soit $(k,l) \in (\mathbb{N}^{*})^2$. Soient $A=(a_1,\dots,a_k) \in V^k$ et $B=(b_1,\dots,b_l) \in V^l$. On dit que $B$ est \textbf{inclu} dans $A$, noté $B \subseteq A$, s'il existe $i \in [\![1,k]\!]$ vérifiant $B=(a_i,\dots,a_{i+l-1})$ avec la convention $\forall j \in \mathbb{N}^* \quad a_{k+j}=a_j$.
+\end{definition}
+
+Les cycles et chemins d'un graphe orienté ou non étant des tuples, on définit alors la notion d'inclusion de chemin dans un cycle, de chemin dans un chemin et de cycle dans un cycle.
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+Soient $v_1,v_2 \in V$. On dit que $v_1$ et $v_2$ sont \textbf{connectés} dans G s'il existe $k \in \mathbb{N}^*$ et un chemin $(p_1,\dots,p_k) \in V^k$ vérifiant $p_1=v_1$ et $p_k=v_2$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit que $G$ est \textbf{connexe} (respectivement \textbf{fortement connexe}) si $G$ est non orienté (respectivement non orienté) et pour tout couple de sommets $(v_1,v_2) \in V^2$, $v_1$ et $v_2$ sont connectés dans $G$.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe. Soient $(v_1,v_2) \in V^2$.
+On appelle \textbf{chemin Hamiltonien} dans $G$ de $v_1$ vers $v2$ tout chemin $P_H=(v_1,p_2\dots,p_k,v_2)$ de $G$ de longueur $\#V$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+On appelle \textbf{cycle Hamiltonien} dans $G$ tout cycle $C_H$ de $G$ passant un unique fois par chaque sommet de $G$
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit que $G$ est un \textbf{graphe Hamiltonien} s'il existe un cycle Hamiltonien dans $G$.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe.
+Soit $H$ un sous-graphe induit de $G$.
+On dit que $H$ est un \textbf{cycle Hamiltonien induit} par $G$ s'il est 2-régulier, connexe et non orienté.
+\end{definition}
+
+\subsection{Opérations sur les graphes}
+\begin{definition}
+Soient $G_1=(V_1,E_1),G_2=(V_2,E_2)$ deux graphes. On définit le \textbf{produit cartésien} de $G_1$ et $G_2$, noté $G_1 \square G_2=(V_1 \times V_2,E_{G_1 \square G_2})$ vérifiant que deux sommets $(v_1,v_2),(v_1',v_2') \in V_1 \times V_2$ sont reliés si $(v_1=v_1') \land \{v_2,v_2'\} \in E_2$ ou $(v_2=v_2') \land \{v_1,v_1'\} \in E_1$
+\end{definition}
+
+\subsection{Structures particulières}
+\begin{definition}
+Soit $n \in \mathbb{N}^*$.
+On appelle \textbf{graphe chemin} (d'ordre $n$) tout graphe noté $P_n=(\{v_1,\dots,v_n\},E)$ vérifiant $E=\{\{v_{k},v_{k+1}\} \mid k \in [\![1,n-1]\!]\}$
+\end{definition}
+
+
+\begin{definition}
+Soient $n_1,n_2 \in \mathbb{N}^*$.
+On appelle \textbf{graphe grille} rectangulaire (de dimensions) $(n_1,n_2)$ le graphe noté $\mathcal{G}_{n_1,n_2}=P_{n_1} \square P_{n_2}$.
+
+Dans le cas où $n_1=n_2=n$, on notera $\mathcal{G}_n=(\mathcal{V}_n,\mathcal{E}_n)$ et on dira que c'est un graphe grille carré (de dimensions) $(n,n)$.
+\end{definition}
+
+
+\begin{definition}
+Soit $G$ un graphe.
+Pour $k \in \mathbb{N}^*$, on dit que $G$ est \textbf{k-régulier} si tous ses sommets sont de degré $k$.
+\end{definition}
+
+\begin{remark}
+Un graphe cycle est un graphe 2-régulier.
+\end{remark}
+
+\begin{definition}
+Soit $G$ un graphe.
+On dit que $G$ est \textbf{planaire} s'il peut être dessiné sans qu'aucune arêtes ne s'intersecte.
+\end{definition}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On dit que $G$ est \textbf{biparti} s'il existe une partition $V=V_{1} \sqcup V_{2}$ vérifiant que chaque arête de $G$ possède une extrémité dans $V_{1}$ et l'autre dans $V_{2}$.
+\end{definition}
+
+
+\begin{definition}
+Soit $G$ un graphe.
+Pour $k \in \mathbb{N}$, on dit qu'un graphe $F$ est un \textbf{k-facteur} de G si c'est un sous-graphe couvrant k-régulier de $G$.
+\end{definition}
+
+\begin{remark}
+A222202 (OEIS) pour le nombre de $2$-facteurs dans un graphe grille $(2n,2n)$, $(n \in \mathbb{N}^*)$. Pour des dimensions (produit des dimensions) impairs, \cite{NumFactors1994} a prouvé que ça vallait 0 (équivalence).
+\end{remark}
+
+\begin{definition}
+Soit $G$ un graphe. On dit que $G$ est \textbf{acyclique} s'il ne contient pas de cycle.
+\end{definition}
+
+\begin{definition}
+Soit $T$ un graphe. On dit que $T$ est un \textbf{arbre} si c'est un graphe acyclique connexe.
+\end{definition}
+
+\begin{definition}
+Soit $G$ un graphe. Soit $T$ un sous-graphe $G$.
+On dit que $T$ est un \textbf{arbre couvrant} de $G$ si $T$ est un arbre et que $T$ est un sous-graphe couvrant de $G$.
+\end{definition}
+
+\subsection{Graphes associés}
+\begin{definition}
+Soit $G$ un graphe planaire. On appelle \textbf{graphe dual} de $G$ le graphe $D_{G}=(V',E')$ vérifiant qu'à chaque sommet $v \in V'$ est associée une face de $G$ et que pour tout couple $(v_{1},v_{2}) \in V'^{2}$, $\{v_{1},v_{2}\} \in E'$ si les faces correspondantes à $v_{1}$ et $v_{2}$ ont une arête en commun.
+\end{definition}
+
+\begin{remark}
+Dans cette définition, on ne considère pas la "face extérieure" au graphe.
+\end{remark}
+
+\begin{remark}
+Tout graphe grille non nécessairemment carré est planaire.
+\end{remark}
+
+\begin{remark}
+Soit $n \in \mathbb{N}^*$.
+Le dual $D_{\mathcal{G}_n}$ de $\mathcal{G}_n$ est isomorphe à $\mathcal{G}_{n-1}$.
+\end{remark}
+
+\begin{definition}
+Soit $G$ un graphe. On appelle \textbf{graphe adjoint} de $G$ le graphe $L_{G}=(V',E')$ vérifiant que $V'=E$ et pour tout couple $(v_{1},v_{2}) \in V'^{2}$, $\{v_{1},v_{2}\} \in E'$ si les arêtes associées dans $G$ ont une extrémité commune.
+\end{definition}
+
+
+
+\begin{remark}
+Un graphe grille rectangulaire est en particulier le produit cartésien de deux graphes chemins.
+\end{remark}
+
+\subsection{Autres}
+
+\begin{definition}
+Soient $i,j \in \mathbb{N}$. On définit le \textbf{symbole de Kronecker} $\delta_{ij}$ par :
+
+\[
+\delta_{ij}=\begin{cases} 1 \quad \text{si $i=j$} \\ 0 \quad \text{sinon} \end{cases}
+\]
+
+\end{definition}
+
+\newpage
+\part{Théorie générale}
+
+\section{Introduction}
+
+\begin{definition}
+On note \textbf{HCP (Hamiltonian Cycle Problem)} la problématique de savoir s'il existe un cycle Hamiltonien dans un graphe donné.
+
+On note \textbf{HPP (Hamiltonian Path Problem)} la problématique de savoir s'il existe un chemin Hamiltonien entre deux points dans un graphe donné.
+\end{definition}
+
+En 1982, Alon Itai, Christos H. Papadimitriou, et Jayme Luiz Szwarcfiter (\cite{IAPCSzJ1982}) ont prouvé que le HCP dans un graphe grille quleconque est $\mathcal{NP}$-complet et que le HPP (donc aussi le HCP) étaient $\mathcal{P}$ dans un graphe grille rectangulaire.
+
+C. Umans (\cite{Umans1996AnAF}) a montré que le HCP était dans la classe $\mathcal{P}$ pour les graphes grilles sans trous.
+
+\section{Matrices}
+
+Soit $n \in \mathbb{N}^*$. Dans toute cette section, les graphes $G$ considérés seront supposés d'ordre $n$, non orientés, sans boucle ni arête multiple sauf si reprécision.
+
+
+\subsection{Généralités}
+
+
+\begin{definition}
+Soient $M=(m_{ij})_{1 \le i,j \le n},N=(n_{ij})_{1 \le i,j \le n} \in \mathcal{M}_{n}(\mathbb{R})$. On définit le \textbf{produit de Kronecker} entre $M$ et $N$ par :
+
+\[
+M \otimes N =
+\begin{pmatrix}
+m_{11}N & \dots & m_{1n}N \\
+\vdots & \ddots & \vdots \\
+m_{n1}N & \dots & m_{nn}N
+\end{pmatrix}
+\]
+\end{definition}
+
+\begin{remark}
+Pour $M \in \mathcal{M}_{n_1}(\mathbb{R})$ et $N \in \mathcal{M}_{n_2}(\mathbb{R})$, $M \otimes N \in \mathcal{M}_{n_{1}n_{2}}(\mathbb{R})$
+\end{remark}
+
+\begin{definition}
+Soient $M,N \in \mathcal{M}_{n}(\mathbb{R})$. On définit la \textbf{somme de Kronecker} entre $M$ et $N$ par:
+
+\[
+M \oplus N = M \otimes I_{n} + I_{n} \otimes N
+\]
+\end{definition}
+
+\begin{property}
+Soient $M,N \in \mathcal{M}_{n}(\mathbb{R})$. On a :
+
+\[
+Sp(M \oplus N)=\{\lambda+\mu \mid \lambda \in Sp \, M \text{,} \, \mu \in Sp \, N\}
+\]
+\end{property}
+
+
+\subsection{Matrices stochastiques}
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+Soit $P={(p_{ij})}_{1 \le i,j \le n} \in \mathcal{M}_{n}(\mathbb{R})$.
+
+On dit que P est \textbf{doublement stochastique} associée à $G$ si elle vérifie:
+
+\begin{itemize}
+\item $\forall i \in [\![1,n]\!] \quad \sum\limits_{j=1}^{n}p_{ij}=1$
+\item  $\forall j \in [\![1,n]\!] \quad \sum\limits_{i=1}^{n}p_{ij}=1$
+\item $\forall (i,j) \in {[\![1,n]\!]}^{2} \quad p_{ij} \ge 0$
+\item  $\forall (i,j) \in {[\![1,n]\!]}^{2} \quad \{i,j\} \notin V \implies p_{ij}=0$
+\end{itemize}
+
+On note $\mathcal{D}\mathcal{S}$ l'ensemble des matrices doublement stochastiques induites par $G$.
+\end{definition}
+
+On peut résoudre le HCP dans un graphe $G$ quelconque via problème d'optimisation (\cite{Haythorpe2010FindingHC,Ejov2008DeterminantsAL}, un peu\cite{Ejov2009ConsistentBO}):
+
+\[
+\min_{P \in \mathcal{D}\mathcal{S}} -det(I_{n}-P+\frac{1}{n}J) \quad \text{où $J \in \mathcal{M}_{n}(\mathbb{R})$ est constituée uniquement de 1}
+\]
+
+Les chaines de Markov peuvent être utiles pour le HCP:\cite{Haythorpe2013MarkovCB},\cite{Ejov2009ConsistentBO},\cite{Filar2007ControlledMC}
+
+\subsection{Matrices d'adjacence}
+
+\begin{definition}
+On définit la \textbf{matrice d'adjacence} (selon un indiçage fixé) $M_G=(m_{ij})_{1 \le i,j \le n}$ de $G$ par:
+
+\[
+\forall (i,j) \in [\![1,n]\!]^2 \; m_{ij}=
+	\begin{cases}
+	1 \; \text{si $\{i,j\} \in E$}\\
+	0 \; \text{sinon}
+	\end{cases}
+\]
+\end{definition}
+
+\begin{remark}
+La matrice d'adjacence d'un graphe dépend de l'indiçage choisi. Deux indiçages différents d'un même graphe induisent deux graphes isomorphes.
+\end{remark}
+
+\begin{property}
+Soient $G$ et $G'$ deux graphes isomorphes. Alors il existe une matrice de permutation $P$ vérifiant $M_{G'}=PM_{G}P^{T}$.
+\end{property}
+
+\begin{remark}
+En particulier, les matrices d'adjacence de graphes venant d'indiçages différents d'un même graphe sont orthogonalement semblables.
+\end{remark}
+
+\begin{property}
+Pour $\sigma \in S_{n}$ une permutation, en notant $P_{\sigma}=(\delta_{i,\sigma (j)})_{(i,j)\in [\![1,n]\!]^{2}}$ sa matrice associée, on a :
+
+\[
+\chi_{P_{\sigma}}=\prod\limits_{k=1}^{n}(X^{k}-1)^{C_{k}} \quad \text{où les $C_{i}$ $(i \in [\![1,n]\!])$ sont le nombre de i-cycles dans $\sigma$}
+\]
+\end{property}
+
+\begin{corollary}
+Une matrice de permutation $P \in \mathcal{M}_{n}(\{0,1\})$ est la matrice d'adjacence d'un cycle Hamiltonien si et seulement si $\chi _{P} = X^{n}-1$ (\cite{Ejov2006SOLVINGTH})
+\end{corollary}
+
+\begin{definition}
+On définit (avec abus) la \textbf{matrice d'adjacence symbolique} $X_{G}$ de G par:
+
+\[
+\forall (i,j) \in [\![1,n]\!]^2 \; [X_{G}]_{ij}=
+	\begin{cases}
+	x_{ij} \; \text{si $\{i,j\} \in V$}\\
+	0 \; \text{sinon}
+	\end{cases}
+\text{où les $x_{ij} \in [0,1]$ sont quelconques}
+\]
+\end{definition}
+
+
+Le HCP est équivalent à chercher les $x_{ij} \in \mathbb{R}$, $(i,j) \in [\![1,n]\!]^2$, qui vérifient (\cite{Ejov2006SOLVINGTH}):
+
+\begin{itemize}
+\item $\forall (i,j) \in [\![1,n]\!]^2 \; x_{ij}(1-x_{ij})=0$ \quad (pour qu'ils soient dans $\{0,1\}$)
+\item $\forall i \in [\![1,n]\!] \; \sum\limits_{j=1}^{n}x_{ij}=1$ \quad (la somme sur chaque ligne est égale à 1)
+\item $\forall j \in [\![1,n]\!] \; \sum\limits_{i=1}^{n}x_{ij}=1$ \quad (la somme sur chaque colonne est égale à 1)
+\item $\chi_{X_{G}} - X^{n}+1=0$ \quad (pour que $X_{G}$ soit associé à un cycle Hamiltonien)
+\end{itemize}
+
+\begin{remark}
+Les 3 premières conditions traduisent que $X_{G}$ est une matrice de permutation et la dernière assure que la permutation associée soit un $n$-cycle.
+
+
+Les différents facteurs du déterminant symbolique ($det(X_{G})$) encodent toutes les partitions de G en cycles orientés à sommets disjointes (2-facteurs orientés) (\cite{Ejov2006SOLVINGTH}) (et donc potentiellement un cycle Hamiltonien s'il existe, dans ce cas il y en aura ``deux fois trop'').
+\end{remark}
+
+\begin{property}
+On suppose $n$ pair. Soit $G$ un graphe biparti à $n$ sommets. Alors le spectre de $M_G$ est symétrique au sens suivant :
+
+\[
+\forall \lambda \in Sp \, M_G \quad -\lambda \in Sp \, M_G
+\]
+\end{property}
+
+\begin{proof}
+Utiliser que $M_G$ est semblable à 
+$\begin{pmatrix}
+0 & B^T \\
+B & 0
+\end{pmatrix}$
+
+où $B \in M_{\frac{n}{2}}(\mathbb{R})$
+
+\end{proof}
+
+\begin{property}
+Soit $P_n$ un graphe chemin à $n$ sommets. Le spectre de $M_{P_n}$ est :
+
+\[
+Sp \, M_{P_n}=\{2cos(\frac{i\pi}{n+1}) \mid i \in [\![1,n]\!]\}
+\]
+\end{property}
+
+\begin{proof}
+à avoir, voir $C_{2n+2}$, relation de récurrence
+\end{proof}
+
+\begin{corollary}
+On a :
+
+\[
+Sp \, M_{G_n}=\{2cos(\frac{i\pi}{n+1})+2cos(\frac{j\pi}{n+1}) \mid (i,j) \in [\![1,n]\!]^2\}
+\]
+\end{corollary}
+
+\begin{property}
+Soient $G_1,G_2$ deux graphes à $n$ sommets. La matrice d'adjacence $M_{G_1 \square G_2}$ du produit cartésien de $G_1$ et $G_2$ vérifie :
+
+\[
+M_{G_1 \square G_2}=M_{G_1} \oplus M_{G_2}
+\]
+\end{property}
+
+\begin{corollary}
+On a :
+
+\[
+M_{G_n}=M_{P_n} \oplus M_{P_n}
+\]
+\end{corollary}
+
+\begin{property}
+Soient $G$ un graphe à $n$ sommets. Soit $k \in \mathbb{N}$.
+$G$ est $k$-régulier si et seulement si $\begin{pmatrix} 1 \\ \vdots \\ 1 \end{pmatrix}$ est vecteur propre de $M_G$.
+
+Dans ce cas la valeur propre associée est $k$ et pour tout vecteur propre $\begin{pmatrix} x_1 \\ \vdots \\ x_n \end{pmatrix} \in \mathcal{M}_{n}(\mathbb{R})$, on a $\sum\limits_{k=1}^{n} x_k = 1$.
+\end{property}
+
+\begin{proof}
+A ECRIRE
+
+Pour l'équivalence il suffit de regarder la première diagonale de $M_G$.
+
+Pour la valeur propre associé, calculer.
+
+Pour la somme qui vaut 1, théorème spectral.
+\end{proof}
+
+\subsection{Matrice Laplacienne}
+Dans toute cette section, on fixe un graphe $G$ non orienté, sans boucle ni arête multiple. On note $n=\# V$ le nombre de sommets de $G$.
+
+\begin{definition}
+On définit la \textbf{matrice Laplacienne} $L_{G}$ de $G$ par $L_{G}=D_{G}-M_{G}$ où $D_{G}=Diag((deg(i))_{i \in [\! [1,n]\! ]})$ et $M_{G}$ est la matrice d'adjacence de G.
+\end{definition}
+
+\begin{property}[Théorème de Kirschoff]
+Le nombre d'arbres couvrants de $G$ est égal, au signe près, à n'importe quel cofacteur de $L_{G}$
+\end{property}
+
+\begin{corollary}
+Le nombre d'arbres couvrants $a(n)$ de $G$ vérifie :
+
+\[
+a(n)=\frac{1}{n} \prod_{\substack{\lambda \in Sp \, M_G \\ \lambda \neq 0}} \lambda
+\]
+\end{corollary}
+
+\begin{property}
+Soient $G_1,G_2$ deux graphes à $n$ sommets. On a (\cite{Barik2015ONTL}):
+
+\[
+L_{G_1 \square G_2}=L_{G_1} \oplus L_{G_2}
+\]
+\end{property}
+
+\begin{property}
+On a :
+
+\[
+Sp \, L_{P_n} = \{2-2cos(\frac{i\pi}{n}) \mid i \in [\![1,n]\!] \}
+\]
+\end{property}
+
+\begin{corollary}
+On a :
+
+\[
+Sp \, L_{G_n} = \{4-2cos(\frac{i\pi}{n})-2cos(\frac{j\pi}{n}) \mid (i,j) \in [\![1,n]\!]^2 \}
+\]
+\end{corollary}
+
+\section{SAT}
+Le HCP dans un graphe quelconque est équivalent à un problème SAT (\cite{Plotnikov2001ALM}) qui est alors $\mathcal{NP}$-complet
+
+\section{Matroïdes}
+j'arrive
+
+\section{Faits supplémentaires}
+
+Soit $G$ est un graphe grille $(n_{1},n_{2})$ sans trou, alors $\#V=n_{1}n_{2}$ et $\#E=n_1(n_2-1)+n_2(n_1-1)$
+
+
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe. On note $\Gamma$ l'ensemble des sous-graphes de $G$.
+On définit la loi de composition interne $\oplus : \Gamma \times \Gamma \to \Gamma$ appelée différence symétrique par : (\cite{Umans1996AnAF})
+$$\forall H_1=(V_1,E_1),H_2=(V_2,E_2) \in \Gamma \quad H_1 \oplus H_2 = (V_1 \cup V_2,(E_1 \cup E_2) \setminus (E_1 \cap E_2))$$
+\end{definition}
+
+\begin{property}
+$(\Gamma,\oplus)$ est un groupe abélien d'inverse le graphe vide d'ordre $\#V$.
+\end{property}
+
+\begin{property}
+$\# \Gamma$ est une puissance de $2$.
+\end{property}
+
+\begin{proof}
+On a pour $H \in \Gamma$, $H$ est son propre inverse.
+\end{proof}
+
+
+\subsection{Correction de A*}
+
+
+
+\section{Autres}
+https://kychin.netlify.app/snake-blog/hamiltonian-cycle/
+https://sites.flinders.edu.au/flinders-hamiltonian-cycle-project/
+
+A FAIRE
+
+
+
+\newpage
+\part{Snake}
+Soit $n \in \mathbb{N}^*$.
+On encodera le plateau de jeu du Snake par un graphe grille $\mathcal{G}_n=(V,E)$ où chaque sommet représente une position atteignable et chaque arête représente un déplacement possible.
+(Remarquons $\# V=n^{2}$)
+
+
+\section{Comment avoir la certitude de gagner ?}
+Sécurité : configuration permettant de suivre une stratégie gagnante si voulu.
+On prend comme sécurité le fait d'avoir le corps et la tête du serpent sur un cycle Hamiltonien. Une autre sécurité est d'avoir un chemin de la tête au bout de la queue tel qu'il est possible d'éviter un sommet de ce chemin (en en prenant un autre localement).
+
+La première difficulté est de choisir la (ou les) sécurité qui minimise les contraintes de déplacements.
+
+
+\section{Génération de cycle Hamiltonien}
+
+A003763 (OEIS.org) pour le nombre de cycles Hamiltoniens dans $\mathcal{G}_n$. A priori pas encore d'équivalent trouvé.
+
+\subsection{Existence}
+
+Avant de vouloir générer des cycles Hamiltoniens dans $\mathcal{G}_n$, assurons nous déjà d'une condition nécessaire et suffisante à leur existence dans $\mathcal{G}_n$.
+
+\begin{property}
+$\mathcal{G}_n$ est un graphe Hamiltonien si et seulement si $n$ est pair.
+\end{property}
+
+\begin{proof}
+$(\impliedby)$ Supposons $n$ pair.
+
+Alors le cycle Hamiltonien canonique (DÉFINIR) convient.
+
+\medskip
+
+$(\implies)$ Raisonnons par contraposée et supposons $n$ impair.
+
+Alors $\#V=n^2$ est impair. Or tout cycle de $\mathcal{G}_n$ est de longueur pair. En particulier tout cycle Hamiltonien, s'il en existe, est de longueur pair. C'est impossible. $\mathcal{G}_n$ n'est alors pas Hamiltonien.
+\end{proof}
+
+\begin{property}
+Tout graphe planaire 4-régulier est Hamiltonien.
+\end{property}
+
+\begin{proof}
+Par Tutte
+\end{proof}
+
+\subsection{Cycles murables}
+
+\begin{definition}
+On peut générer un cycle Hamiltonien dans $\mathcal{G}_n$ en générant un arbre couvrant dans le graphe grille $\mathcal{G}_{n,1/2}$ de dimensions $(\frac{n}{2},\frac{n}{2})$ qu'on lui associe. On en fait ensuite le contour dans  $\mathcal{G}_n$. On dit que le cycle Hamiltonien obtenu est \textbf{murable} c'est à dire que c'est le contour dans  $\mathcal{G}_n$ d'un arbre couvrant de $\mathcal{G}_{n,1/2}$.
+\end{definition}
+
+\begin{remark}
+Avec cette méthode on peut générer autant de cycle qu'il y a d'arbres couvrants dans $\mathcal{G}_{n,1/2}$.
+\end{remark}
+
+
+COMBIEN PAR RAPPORT AU NOMBRE DE CYCLES HAMILTONIENS EXISTANTS?
+
+\begin{property}
+Le nombre $a(n)$ d'arbres couvrants dans $\mathcal{G}_n$ est :
+
+\[
+a(n)=\frac{1}{n^2} \prod_{\substack{(k,l) \in [\![0,n-1]\!]^{2} \\ (k,l) \neq (0,0)}} (4-2cos(\frac{k\pi}{n})-2cos(\frac{l\pi}{n}))=\frac{1}{n^2} \prod_{\substack{(k,l) \in [\![0,n-1]\!]^{2} \\ (k,l) \neq (0,0)}} (4sin^{2}(\frac{k\pi}{2n})+4sin^{2}(\frac{l\pi}{2n}))
+\]
+\end{property}
+
+\begin{proof}
+Corollaire du théorème de Kirschoff et du spectre du graphe chemin $P_n$
+\end{proof}
+
+\begin{property}
+On a :
+
+\[
+a(n) \sim \frac{2^{\frac{1}{4}} \Gamma(\frac{1}{4})exp(\frac{4Gn^{2}}{\pi})}{\pi^{\frac{3}{4}}\sqrt{n}(1+\sqrt{2})^{2n}}
+\]
+où $G=\sum\limits_{n=0}^{+\infty}\frac{(-1)^n}{(2n+1)^2}$ est la constante de Catalan
+\end{property}
+
+\begin{proof}
+Se fait par somme de Riemann (convergence vers la double intégrale)
+
+On a déjà $\int_{0}^{1}\int_{0}^{1}ln(4-2cos(\pi x)-2cos(\pi y))dxdy=\frac{4G}{\pi}$. Et regarder A007341 (OEIS.org)
+
+En utilisant un changement de variable u=(x+y)/2 et v=(x-y)/2, un développement asymptotique de ln(1-x) et en s'inspirant de Wallis on peut montrer : (ECRIRE)
+
+\[
+\int_{0}^{1}\int_{0}^{1}ln(4-2cos(\pi x)-2cos(\pi y))dxdy=\ln4-\frac{1}{2}\sum\limits_{n=1}^{+\infty} \frac{1}{n} \frac{(2n)!^2}{4^{2n}n!^4}=\ln4-\frac{1}{2}\sum\limits_{n=1}^{+\infty} \frac{1}{n} (\frac{{2n \choose n}}{4^n})^2
+\]
+
+D'où en notant $K=\ln4-\frac{1}{2}\sum\limits_{n=1}^{+\infty} \frac{1}{n} \frac{(2n)!^2}{4^{2n}n!^4}>0$, on a :
+
+\[
+a(n)=exp(Kn^{2}+o(n^2))
+\]
+\end{proof}
+
+\subsection{Génération d'un cycle Hamiltonien avec contrainte}
+
+Soit $p \in \mathbb{N}^*$. Soit $S=(s_1,\dots,s_p) \in \mathcal{V}_{n}^{p}$ un chemin de $\mathcal{G}_n$.
+On s'intéresse ici à la problématique de trouver un cycle Hamiltonien $H$ dans $\mathcal{G}_n$ verifiant $S \subseteq H$ ou de savoir qu'il n'en existe pas.
+
+
+\bigskip
+
+La méthode de prendre un plus court chemin de la tête au bout de la queue puis ``d'allonger'' successivement chaque arête ne donne pas forcément un cycle Hami. C'est une méthode gloutonne.
+
+\bigskip
+
+La suite de cette sous-section est basée sur les travaux de C. Umans (\cite{Umans1996AnAF}).
+
+\begin{definition}
+Soit $G=(V,E)$ un graphe.
+On appelle \textbf{graphe transformé} de $G$ le graphe $G^*=(V^*,E^*)$ construit en partant de $G$ comme suit :
+
+\begin{itemize}
+\item 1. On remplace toutes les arêtes $\{x,y\} \in E$ par les sommets $x',y' \in V^*$ et les arêtes $\{x,x'\}, \{y,y'\}, \{x',y'\} \in E^*$.
+\item 2. Pour tout $x \in V$, on ajoute le sommet $x'' \in V^*$ et les arêtes $\{x'',y\}$ pour y parcourant l'ensemble des voisins de $x$ après l'étape 1.
+\end{itemize}
+\end{definition}
+
+\begin{property}
+Soit $G$ un graphe.
+Supposons $G$ biparti, alors $G^*$ est biparti
+\end{property}
+
+\begin{property}
+Soit $G$ un graphe.
+On a qu'il existe un couplage parfait (DEFINIR) dans $G^*$ si et seulement s'il existe un $2$-facteur dans $G$.
+\end{property}
+
+\begin{remark}[Passage d'un couplage parfait à un $2$-facteur]
+Soit $G=(V,E)$ un graphe.
+Soit $(V,M)$ un couplage parfait.
+En posant $F=\{\{x',y'\} \mid x,y \in G, \{x',y'\} \notin M\}$, on obtient un $2$-facteur (V,F).
+\end{remark}
+
+Comme $\mathcal{G}_n$ est Hamiltonien et qu'un cycle Hamiltonien est un $2$-facteur particulier, on a l'existence d'un couplage parfait dans $G^*$.
+
+\begin{property}
+Soit $G$ un graphe. Soit $H$ un sous-graphe de $G$.
+On suppose $G$ biparti. Alors $H$ est biparti.
+\end{property}
+
+\begin{proof}
+Comme $G$ est biparti, il est deux coloriable. Alors $H$ l'est aussi et est alors biparti.
+\end{proof}
+
+La contrainte $S \subseteq H$ est équivalente à $E(G_H) \subseteq \mathcal{E}_n \setminus \{\{s_i,v\} \mid i \in [\![1,p]\!], v \in \mathcal{V}_n\}$. DEFINIR E(GN)
+
+Alors (EXPLICITER) pour trouver un deux facteur $F$ de $\mathcal{G}_n$ satisfaisant $S \subseteq F$, on peut supprimer de $\mathcal{G}_{n}^{*}$ les arêtes $\{s_i,v\}$ pour $(i,v)$ parcourant $[\![1,p]\!] \times \mathcal{V}_n$ puis y chercher un couplage parfait.
+
+Puis en faisant $F \oplus c_1 \oplus \dots \oplus c_k$ pour $(c_1,\dots,c_k)$ une suite de cellules alternées, on réduit le nombre de composantes de $F$ par $1$ à chaque différence symétrique, pour finalement obtenir un cycle Hamiltonien (on a l'existence d'une telle suite de cellules alternées). On veille de plus à ce qu'aucune des arêtes des $c_i$ ne coincident avec le serpent. Mais n'appliquer que des cellules de Type \Romannum{3} (on ne sait pas comment trouver les $c_i$) à un $2$-facteur ne suffit pas pour trouver un cycle Hamiltonien $H$ vérifiant $S \subseteq H$ (contre-exemple facile). Il faut utiliser les suites de bandes alternées.
+
+\smallskip
+
+\begin{property}
+Soit $F$ un $2$-facteur de $\mathcal{G}_n$. Soit $c$ une cellule de Type \Romannum{3} dans $\mathcal{G}_{n,F}$ DEFINIR, alors $F \oplus c$ possède une composante de moins que $F$.
+\end{property}
+
+
+\begin{conjecture}
+Soit $F$ un $2$-facteur de $\mathcal{G}_n$.
+Il existe une cellule de Type \Romannum{3} dans $\mathcal{G}_{n,F}$.
+\end{conjecture}
+
+\begin{proof}
+Supposons par l'absurde que $\mathcal{G}_{n,F}$ ne contient aucune cellule de Type \Romannum{3}.
+
+Si $\mathcal{G}_{n,F}$ contient une cellule de Type \Romannum{4}, alors $\mathcal{G}_{n,F}$ contient une cellule de Type \Romannum{3}. Donc $\mathcal{G}_{n,F}$ ne contient pas de cellule de Type \Romannum{4}.
+
+Comme $\mathcal{G}$ est Hamiltonien, $\mathcal{G}_{n,F}$ ne peut pas posséder que des cellules de Type \Romannum{2}.
+
+Donc ou bien $\mathcal{G}_{n,F}$ ne contient que des cellules de type \Romannum{1} ou bien $\mathcal{G}_{n,F}$ contient au moins une cellule de Type \Romannum{1} et une cellule de Type \Romannum{2}.
+
+A FINIR
+\end{proof}
+
+
+
+
+
+\section{Méthodes de résolution de Snake}
+
+Lorsque l'on gagne le jeu on est sur un cycle Hamiltonien (ou sur un chemin Hamiltonien). Soit $n \in \mathbb{N}^*$ pair pour que $\mathcal{G}_n$ soit Hamiltonien, cela simplifiera les méthodes envisagées.
+
+REGARDER SI N IMPAIR CE QU'ON FERAIT
+
+\subsection{Méthode optimale}
+On suppose l'unicité d'une stratégie $(S)$ optimale pour gagner au Snake.
+
+Trouver $(S)$ revient à trouver, à chaque pomme mangée le chemin optimal (associé à $(S)$ jusqu'à la nouvelle pomme.
+
+\medskip
+
+Il faudrait par exemple trouver un plus court chemin vérifiant que le serpent soit sur un cycle Hamiltonien lorsqu'il mange la pomme (condition (HP)). On a accès aux plus courts chemins (PPC) via A* (plus rapide qu'un parcours en largeur). Ensuite il faut trouver les différents PCC (plus courts chemins) vérifiant (HP), mais le nombre de plus courts chemins semble (A ETRE SUR) croître exponentiellement en fonction de la distance à parcourir.
+
+On peut aussi voir ça d'un point de vue plus dynamique en 2 phases : La première est la considération du mouvement du corps du serpent, si on parcours beaucoup de sommets avant de se rapprocher du corps du serpent, on n'aura pas besoin de le considérer puisqu'il ne sera déjà plus là. La deuxième est de fixer le graphe obtenu (en retirant des arêtes) lors de la première phase puis de checher classiquement un cycle Hami dessus.
+
+On fixe la tête $t$ du serpent à un instant quelconque. Le déplacement du serpent peut être découpé en deux phases :
+La première est lorsque $t$ est dans le serpent. Le mouvement du bout de la queue peut être prévu.
+La deuxième lorsque $t$ n'est plus dans le serpent.
+
+Une fois qu'on a trouvé tous les cycles Hami vérifiant (HP), il y en aura un ``meilleur'' qui prévoira le mieux ``la suite''. Il ne sera pas le meilleur d'un point de vu probabiliste (car prendra en compte des cas qui ne sont pas du tout probable d'arriver). On peut le voir d'un point de vue probabiliste en fonction de là où peut apparaître la pomme pour avoir une méthode non forcément gagnante mais bien plus efficace. Il faut trouver un équilibre entre risques et performances.
+
+On ne peut pas se limiter aux cycles Hamiltoniens murables puisqu'il semble en avoir (PROUVER) exponentiellement moins que des quelconques.
+
+Une question qu'on peut se poser est la nécessité de la condition (HP). En effet, pour une configuration donnée, il y a ``toute la première phase de recherche'' de ``marge'' avec le cycle dynamique qui va pouvoir nous donner un cycle Hami. La seule condition est alors d'éviter la pomme, ça n'est pas une condition à négliger
+
+On se rend compte que la première phase de la recherche (première phase du déplacement du serpent), n'existe plus à partir de la moitié du jeu. C'est pourquoi la condition (HP) est utile (on peut faire sans, mais c'est compliqué de trouver un cycle Hami dedans en prenant en compte la pomme. Si on mange la pomme en plein milieu, on aura déjà prévu ça donc c'est ok, mais si on en mange une deuxième après cette marge etc.. on peut perdre) à partir de la moitié du jeu.
+
+La méthode la plus rapide sera alors non forcément gagnante (car on va imaginer que les cas peu probables n'arriveront jamais). Il y aura une corrélation entre le taux de victoire et le temps de jeu. On remarque qu'on l'a déjà avec la méthode A* seul (gros risques pour peu de performances), mais pour cette méthode, c'est très peu probable que les pommes soient toutes devant la tête du serpent et forment un cycle Hamiltonien.
+
+\subsection{Plus court chemin}
+
+\subsubsection{Théorie}
+
+Fort risque donc bonnes performances peu probables.
+
+\paragraph{Énoncé de la méthode}
+Lorsqu'un pomme est mangée, on trouve un plus court chemin (s'il existe) de la tête du serpent jusqu'à la pomme.
+
+On utilise l'algorithme A* pour trouver un plus court chemin, on prendra la distance Manhattan (déplacements en diagonales non autorisés) lorsqu'il s'agira d'en calculer. De plus, l'ordre de priorité des sommets considérés est : Ouest $<$ Nord $<$ Sud $<$ Est.
+
+On prend en compte les déplacements de la queue lors de la recherche du plus court chemin (seul la première phase est à prendre en compte car si le plus court chemin trouvé s'intersecte, alors il n'est pas de longueur minimale).
+
+\subsubsection{Résultats et analyse}
+Le plus rapide, mais la victoire n'est pas (du tout) assurée.
+
+\subsection{Plus court chemin sans couper grille}
+\subsubsection{Théorie}
+Un peu mieux sûrement.
+
+\paragraph{Énoncé de la méthode}
+A* mais si la grille est coupé en deux, on évite.
+
+\subsubsection{Résultats et analyse}
+
+jsp
+
+\subsection{Suivi de cycle Hamiltonien}
+
+\subsubsection{Théorie}
+
+\paragraph{Énoncé de la méthode}
+Soit $H$ un cycle Hamiltonien.
+La méthode consiste à simplement suivre le cycle Hamiltonien jusqu'à que la partie soit gagnée.
+
+\begin{property}
+La méthode de suivi de cycle Hamiltonien est gagnante est gagne en $\mathcal{O}(n^4)$ pas en moyenne.
+\end{property}
+
+
+%\section{Point de vue probabiliste}
+
+\begin{proof}
+La distribution du nombre de pas faits en une partie est $T=n^{2}-1+\sum\limits_{i=1}^{n^{2}-1}X_{i}$ avec $X_{i} \sim \mathcal{U}([\![1,i]\!])$ (\cite{Du2022AlphaSnakePI}).
+
+Alors on a :
+
+\begin{align*}
+\mathbb{E}(T) & =n^2-1+\sum\limits_{i=1}^{n^{2}-1}\mathbb{E}(X_{i}) && \text{Par linéarité de l'espérance}\\
+& =n^2-1+\sum\limits_{i=1}^{n^{2}-1} \frac{i+1}{2} \\
+& =n^2-1+\frac{1}{2}\sum\limits_{i=1}^{n^{2}-1} i + \frac{1}{2}\sum\limits_{i=1}^{n^{2}-1} 1 \\
+& =n^2-1+\frac{n^2(n^2-1)}{4} + \frac{n^2-1}{2} \\
+& =\frac{n^2(n^2-1)}{4} + \frac{3(n^2-1)}{2} \\
+\mathbb{E}(T) & =\frac{1}{4}(n^2-1)(n^2+6) \\
+\mathbb{E}(T) & =\mathcal{O}(n^4)
+\end{align*}
+
+Comme voulu.
+
+\end{proof}
+
+
+\subsubsection{Résultats et analyse}
+
+
+\subsection{Raccourcis naïf sur cycle Hamiltonien}
+
+\subsubsection{Théorie}
+
+
+Soit $G=(V,E) \in \mathcal{G}_n$. Soit $H$ un cycle Hamiltonien. On se place dans le dual $D_G$ de $G$. $H$ partitionne les sommets de $D_G$ en deux ensembles $Int_{H}(D_G)$ et $Ext_{H}(D_G)$ qui correspondent aux sommets de $D_G$ à l'intérieur et à l'extérieur de $H$ respectivement. (PROUVER)
+
+
+
+\smallskip
+
+On choisit un sommet d'origine $v_0 \in V$ (on peut prendre le sommet le plus "en haut à gauche" par exemple) . On oriente $H$ de sorte à ce que le sommet entrant à $v_0$ est "à sa droite". On appelle cette orientation une orientation trigonométrique (regarder le sommet en haut à gauche, dans l'autre cas on appelerait ça une orientation horaire). On numérote les sommets de $G$ par un entier entre $0$ et $n^2-1$ en commencant par $v_0$ et en suivant $H$. Cela nous établit une bijection $\nu_{v_0,H} : V \to [\![0,n^2-1]\!]$ que l'on appelle \textbf{numérotation relative} à $H$ depuis $v_0$.
+
+\begin{definition}
+Pour $v_1,v_2 \in V$, on dit que $(v_1,v_2)$ est un \textbf{raccourci} si $\{v_1,v_2\} \in V$ et $1<\nu_{v_0,H}(v_2)-\nu_{v_0,H}(v_1)<n^2-1$.
+\end{definition}
+
+\begin{definition}
+On note $S_H$ l'ensemble des raccourcis relativement à $H$. On note $S_{Ext,H}$ (resp. $S_{Int,H}$) l'ensemble des raccourcis extérieurs (resp. raccourcis intérieurs) relativement à $H$.
+\end{definition}
+
+\begin{definition}
+On appelle \textbf{arbre associé} à $H$, noté $T_H$,le sous-graphe de $D_G$ où deux sommets $v_1,v_2 \in V_{D_G}$ sont reliés si $v_1,v_2 \in Int_H(D_G)$
+\end{definition}
+
+\begin{property}[Reconfiguration des arbres couvrants]
+Soient $G \in \mathcal{G}_n$.
+Soient $T,T'$ deux arbres couvrants de $G$. Alors il existe $k \in \mathbb{N}^*$ et $T_1,\dots,T_k$ des arbres couvrants de $G$ vérifiant :
+
+$T_1=T$, $T_k=T'$ et pour $i \in [\![1,k-1]\!]$, $T_{i}$ peut être transformé en $T_{i+1}$ via un unique déplacement licite d'une arête.
+\end{property}
+
+\begin{conjecture}
+Tout déplacement licite d'une arête de l'arbre associé à H conserve $\#S_{Int,H}$, $\#S_{Ext,H}$, $\#Int_{H}(D_G)$, $\#Ext_{H}(D_G)$.
+\end{conjecture}
+
+\begin{proof}
+à faire
+\end{proof}
+
+\begin{property}
+On a :
+\[
+\#Int_{H}(D_G)=\frac{n^{2}}{2}-1
+\]
+
+\[
+\#Ext_{H}(D_G)=(n-1)^{2}-\#Int_{H}(D_G)=\frac{n^{2}}{2}-2n+2
+\]
+
+\[
+\#S_{Ext,H}=\frac{n^{2}}{2}-2n+2=\#Ext_{H}(D_G)
+\]
+
+\[
+\#S_{Int,H}=\frac{n^{2}}{2}-2=\#Int_{H}(D_G)-1
+\]
+
+\[
+\#S_{Ext,H}+\#S_{Int,H}=\#S_{H}
+\]
+\end{property}
+
+\begin{proof}
+Il suffit de se ramener au cycle Hamiltonien canonique $H_{can}$ via une reconfiguration (qui préserve ces quantités) de $T_H$ vers $T_{H_{can}}$ ("peigne")
+\end{proof}
+
+\begin{definition}
+Soit $s=(v_1,v_2)$ un raccourci. Soit $v_0 \in V$.
+On appelle \textbf{taux} de $s$ l'entier $\nu_{v_0,H}(v_2)-\nu_{v_0,H}(v_1)$ que l'on notera $\tau_{v_0,H}(s)$.
+\end{definition}
+
+\begin{definition}
+Pour un sommet $v \in V$, on appelle \textbf{taux de raccourci} de $v$ la somme des taux de tous les raccourcis partant de $v$, noté $\tau_{v_0,H}(v)$. 
+\end{definition}
+
+\begin{property}
+On a $\#s=n(n-2)$
+\end{property}
+
+\begin{proof}
+à faire
+\end{proof}
+
+\begin{definition}
+On appelle \textbf{taux de raccourci} de $G$ relativement à $H$, noté $\tau_{v_0,H}(G)$, la somme des taux de tous les raccourcis de $G$ dans $H$
+\end{definition}
+
+\begin{remark}
+On a que $\tau_{v_0,H}(G)$ dépend de l'origine choisie. 
+\end{remark}
+
+
+
+Dans le cadre d'un cycle murable, on peut formaliser légèrement le fait de "faire le tour" de $T_H$ :
+
+\begin{property}
+L'ordre des sommets de $T_H$ parcourus (au sens d'être dans la même cellule (à formaliser)) suit un parcours infixe de $T_H$.
+\end{property}
+
+Alors pour un raccourci intérieur $s \in S_{Int}$, $\tau_{v_0,H}(s)$ augmente linéairement en fonction de la longueur du parcours infixe sur $T_H$ depuis le sommet $v_s$ de $D_G$ que traverse $s$ (à coté).
+Ceci est aussi vrai lorsqu'on regarde le taux d'un raccourci extérieur.
+
+Le parcours est infixe au vu du choix de l'orientation de $H$, si $H$ serait orienté de manière horaire, on regarderait plutôt un parcours postfixe.
+
+Dans les deux cas, $\tau_{v_0,H}(s)$ va dépendre linéairement de la taille du sous arbre partant de $v_s$. Pour minimiser le taux de raccourci intérieur, il faut alors minimiser la taille de tous les sous-arbres de $T_H$.
+
+\bigskip
+
+
+
+On oriente le graphe $G$ pour obtenir un graphe $G_{O}=(V_O,E_O)$ vérifiant que deux sommets $v_1,v_2 \in V_O$ sont reliés si $\{v_1,v_2\} \in E$ ou $(v_1,v_2)$ est un raccourci dans $G$.
+
+Le nombre d'orientations possibles d'un graphe est A001174 dans oeis.org
+
+\smallskip
+
+Conjecture/Idée : Avoir "beaucoup" de cycles dans $G_O$ implique que les taux de raccourci des sommets de $G$ sont faibles. Alors on peut conjecturer que le nombre de raccourcis de $G$ est d'autant plus grand que le nombre de cycles dans $G_O$ est faible.
+
+\smallskip
+
+Notons $\#c_{ij}$ le nombre de cycle du sommet indicé $i$ au sommet indicé $j$ dans $G_O$. Notons pour $v \in V$, $v_{+} = \{w \in V \, | \, \{v,w\} \in V_{O}\}$. On a :
+
+\medskip
+
+$\#c_{0n}=\sum\limits_{v \in V} \sum\limits_{v' \in v_{+}} \#c_{v'n}$
+
+\medskip
+
+$\tau_{H}(G)=\sum\limits_{v \in V} \tau_{v_0,H}(v)=\sum\limits_{v \in V} \sum\limits_{v' \in v_{+}} (\nu_{v_0,H}(v')-\nu_{v_0,H}(v))$
+
+\medskip
+
+$\tau_H(G)$ dépend de l'origine choisie (donc théorie difficile dessus) et est moins efficiente que réindicer en fonction du sommet que l'on considère et de faire des raccourcis dessus. Dans ce cas, le taux de raccourci est indépendant du cycle Hamiltonien choisit et sera toujours supérieur aux anciens taux.
+
+\paragraph{Énoncé de la méthode}
+On fixe un cycle Hamiltonien $H$, un sommet d'origine $v_0$ et une numérotation $\nu_{v_0,H}$ relative à $H$ en partant de $v_0$.
+
+Le serpent suit $H$ par défaut. Lorsque le serpent est sur un sommet de taux non nul, il emprunte le raccourci de taux de plus élevé en respectant la condition (HP). Si cette condition n'est pas respectée, le serpent continue de suivre $H$.
+
+
+\subsubsection{Résultats et analyse}
+Converge trop vite vers un simple suivit de cycle Hamiltonien
+
+
+
+\subsection{Raccourcis sur cycle Hamiltonien (Version 2)}
+
+Pour un sommet $v \in V$, on fait un changement de numérotation, en soustrayant (modulo $n^2-1$) à chaque sommet $\nu_{v_0,H}(v)$. Ainsi le taux est alors indépendant de l'origine, il est même commun à tout les cycles Hamiltoniens. Il est d'ailleurs bien supérieur à l'ancien taux maximal (à ``prouver''. Alors il est plus efficace de prendre les raccourcis selon une numérotation dynamique.
+
+\subsection{Raccourcis sur cycle Hamiltonien (Version 3)}
+
+\subsubsection{Présentation}
+On essaie de monter le plus vite de numéro en restant inférieur au numéro de la pomme et du bout de la queue. (Par John Tapsell : https://johnflux.com/tag/snake/)
+
+faire qu'on prévoir les prochains mouvements et que la queue peut partir entre temps donc pas besoin de prendre tant de marge (v3.5)
+
+\subsubsection{Résultats et analyse}
+Trous, on regarde alors score en fonction du moment où on ne faire plus que suivre un cycle Hamiltonien. A FAIRE
+
+\subsection{Raccourcis sur cycle Hamiltonien (Version 3.5)}
+Comme la Version 3 mais on prend en compte les futurs déplacements de la queue pour ne pas prendre trop de marge
+
+
+\subsection{Monte Carlo tree search}
+Ne peut pas marcher car trop de possibilités très différentes.
+
+\subsection{Méthode ``Pomme Moins Queue''}
+Converge trop vite vers suivit cycle Hamiltonien
+
+\subsection{Méthode ``Pomme Moins Queue'' avec cycle Hamiltonien dynamique}
+On remarque que la longueur du plus court chemin de la tête jusqu'à la position désirée dépend du cycle Hamiltonien choisit, on peut donc le modifier en conséquent.
+
+\subsection{Plus court chemin sur cycle Hamiltonien dynamique (Version 1)}
+Victoire non assurée. Souvent bloqué dans des boucles virtuelles.
+
+\subsection{Plus court chemin sur cycle Hamiltonien dynamique avec réparation}
+Faire de la reconfiguration pour tendre vers le cycle Hami canonique (à rotation près) car ça doit être un cycle très modifiable.
+
+SCORER LES CYCLES MODIFIABLE PAR TECHNIQUE DES BOUCLES (par AlphaPheonix)
+
+\subsection{Plus court chemin sur cycle Hamiltonien dynamique (Version 2)}
+On avance d'un pas dans la direction d'un PPC s'il existe un cycle Hamiltonien verifiant (HP) (on utilise l'algorithme de Umans et Lenhart)
+
+\subsection{Plus court chemin dans graphe orienté}
+Victoire assurée si on fait des détours si la grille serait coupée en deux.
+
+\subsection{Parcours de cellules}
+Par (???), plus efficace??
+
+\subsection{Plus court chemin avec vérification post-déplacement}
+Victoire non assurée. Si les pommes apparaissement devant la tête du serpent, on perd. Cela n'est pas un sécurité.
+
+Pour la 1er moitié du jeu (recherche dans un graphe dynamique), cela semble efficace.
+
+Ce qu'il fait perdre le serpent c'est si la pomme apparait 2 fois consécutivement devant la tête du serpent alors qu'elle est à deux cases (sur le chemin) du bout de la queue. C'est peu probable toute la partie mais probable sur la fin de partie.
+
+On voit ici que gagner à tous les coups implique une baisse de performances et que se permettre quelques défaites peut augmenter drastiquement les performances.
+
+Il faut aussi regarder tous (ou au moins plus) les plus courts chemins (voire les ``sous-plus courts chemins'') pour prendre le meilleur.
+
+\subsection{Mixage des méthodes}
+
+Faire schéma de compatibilité des méthodes
+
+\section{Résultats et commentaires}
+
+
+
+
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{citations}
+
+\end{document}
