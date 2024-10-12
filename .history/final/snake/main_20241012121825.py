@@ -16,6 +16,8 @@ from parametres import*
 
 inf=float('inf')
 
+
+
 # donnees.recreer_fichier(liste_methodes)
 
 if nb_cases!=8 and ajouter_donnees:

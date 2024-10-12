@@ -96,8 +96,7 @@ if type_plot in ['methodes_individuelles','nb_pas','nb_pas_total','temp']:
         if nom_feuille not in a_plot:
             continue
         
-        # nom_ratio_a_plot=a_plot[-1]
-        nom_ratio_a_plot='all'
+        nom_ratio_a_plot=a_plot[-1]
 
         # creation des listes
         feuille=fichier[nom_feuille]
@@ -153,14 +152,16 @@ if type_plot in ['methodes_individuelles','nb_pas','nb_pas_total','temp']:
         
         if 'nb_pas' == type_plot:
 
-            if nom_feuille==nom_ratio_a_plot or nom_ratio_a_plot=='all':
+            if nom_feuille==nom_ratio_a_plot:
                 # plot du ratio de defaites de chaque courbe
                 axe_defaites.plot(liste_score,liste_ratio_defaite,color=couleurs[numero_colonne],alpha=1,linewidth=1,linestyle='--')
                 axe_defaites.set_ylabel('ratio de parties perdues')
-                
-            
-            # plot du nb de pas en fonction du score
-            axe_primaire.plot(liste_score,liste_pas_moyen,color=couleurs[numero_colonne],label=nom_feuille)
+
+                # plot du nb de pas en fonction du score
+                axe_primaire.plot(liste_score,liste_pas_moyen,color=couleurs[numero_colonne],label=nom_feuille,linewidth=4)
+            else:
+                # plot du nb de pas en fonction du score
+                axe_primaire.plot(liste_score,liste_pas_moyen,color=couleurs[numero_colonne],label=nom_feuille)
         
         if 'temp' == type_plot:
             # nb essais en fonction du score
@@ -169,12 +170,16 @@ if type_plot in ['methodes_individuelles','nb_pas','nb_pas_total','temp']:
 
         if 'nb_pas_total' == type_plot:
             
-            if nom_feuille==nom_ratio_a_plot or nom_ratio_a_plot=='all':
+            if nom_feuille==nom_ratio_a_plot:
                 # plot du ratio de defaites en fonction du nb de pas total
                 axe_defaites2.plot(liste_nb_pas_total,liste_ratio_defaite_tronquee,color=couleurs[numero_colonne],alpha=1,linewidth=1,linestyle='--')
                 axe_defaites2.set_ylabel('ratio de parties perdues')
-            # plot du score en fonction du nb de pas total
-            axe_primaire2.plot(liste_nb_pas_total,liste_score_tronquee,color=couleurs[numero_colonne],label=nom_feuille)
+
+                # plot du score en fonction du nb de pas total
+                axe_primaire2.plot(liste_nb_pas_total,liste_score_tronquee,color=couleurs[numero_colonne],label=nom_feuille,linewidth=4)
+            else:
+                # plot du score en fonction du nb de pas total
+                axe_primaire2.plot(liste_nb_pas_total,liste_score_tronquee,color=couleurs[numero_colonne],label=nom_feuille)
         
 
         # axe_essais[0].plot(liste_score,liste_essais,color=couleurs[numero_colonne],alpha=alpha_essais)

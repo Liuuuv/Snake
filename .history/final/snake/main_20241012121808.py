@@ -12,9 +12,10 @@ from jeu import Jeu
 from pomme import Pomme
 from affichage import Affichage
 from donnees import Donnees
-from parametres import*
 
 inf=float('inf')
+
+
 
 # donnees.recreer_fichier(liste_methodes)
 

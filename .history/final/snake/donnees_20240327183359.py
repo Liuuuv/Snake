@@ -7,7 +7,7 @@ class Donnees:
     def initialiser(self):
         self.taille_grille=(8,8)
 
-        self.repertoire='final/snake/'
+        self.repertoire='snake/'
 
         
 
