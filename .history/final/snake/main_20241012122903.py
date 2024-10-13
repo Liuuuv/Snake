@@ -19,7 +19,7 @@ inf=float('inf')
 # donnees.recreer_fichier(liste_methodes)
 
 
-## change certains paramètres si l'exécution rapide est activée
+
 if execution_rapide:
     fps=3000
     afficher=False
@@ -31,13 +31,18 @@ if execution_instantanee:
 
 def main():
 
-    heure_debut=time.time()     # pour mesurer le temps d'exécution
+    heure_debut=time.time()
     liste_pas=[]
     dico_taux_raccourcis={}
 
-    donnees=Donnees(nb_cases)
+    donnees=Donnees()
     donnees.nom_fichier=nom_fichier
     donnees.initialiser()
+
+    ## vérifier que le nombre de cases correspond à celui du tableur
+    if nb_cases!=8 and ajouter_donnees:
+        print("nb de cases de la partie différent du nb de cases du tableur")
+        nb_iterations=0
 
     for  _  in  range(nb_iterations):
         py.init()

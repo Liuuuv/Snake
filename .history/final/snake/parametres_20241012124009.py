@@ -1,6 +1,6 @@
 ## liste des méthodes disponibles
 liste_methodes=['suivre_chemin','raccourcis_croissants_v2','a_etoile_seul','pomme_moins_queue','a_etoile_seulement_si_modif',
-                'a_etoile_graphe_oriente','v','parcours_cellules A COMPLETER',
+                'a_etoile_graphe_oriente','a_etoile_projection_queue','parcours_cellules A COMPLETER',
                 'monte_carlo_tree_search NE MARCHE PAS','a_etoile_graphe_oriente_cout','a_etoile_graphe_oriente_hami',
                 'arbre_raccourcis_modifier_hami EXPONENTIEL','raccourcis_croissants_v3']
 
@@ -8,7 +8,7 @@ liste_methodes=['suivre_chemin','raccourcis_croissants_v2','a_etoile_seul','pomm
 nb_cases=8  # nombre de cases sur le côté de la grille carré
 depart_serpent=[0,0]
 nb_iterations=1
-methode='a_etoile_graphe_oriente'
+methode='suivre_chemin'
 
 ## gestion des données
 ajouter_donnees=False
@@ -25,10 +25,10 @@ titre_fenetre='le serpent qui mange des pommes et grandit'
 
 ## debug
 jeu_actif=True  # le serpent est sur la carte si True
-mode_manuel=False    # le joueur doit manuellement faire avancer le temps si True
+mode_manuel=True    # le joueur doit manuellement faire avancer le temps si True
 
 
-execution_instantanee=False
+execution_instantanee=True
 
 
 taux_risque='0'

@@ -1,6 +1,6 @@
 ## liste des méthodes disponibles
 liste_methodes=['suivre_chemin','raccourcis_croissants_v2','a_etoile_seul','pomme_moins_queue','a_etoile_seulement_si_modif',
-                'a_etoile_graphe_oriente','v','parcours_cellules A COMPLETER',
+                'a_etoile_graphe_oriente','a_etoile_projection_queue','parcours_cellules A COMPLETER',
                 'monte_carlo_tree_search NE MARCHE PAS','a_etoile_graphe_oriente_cout','a_etoile_graphe_oriente_hami',
                 'arbre_raccourcis_modifier_hami EXPONENTIEL','raccourcis_croissants_v3']
 
@@ -8,7 +8,7 @@ liste_methodes=['suivre_chemin','raccourcis_croissants_v2','a_etoile_seul','pomm
 nb_cases=8  # nombre de cases sur le côté de la grille carré
 depart_serpent=[0,0]
 nb_iterations=1
-methode='a_etoile_graphe_oriente'
+methode='raccourcis_croissants_v2'
 
 ## gestion des données
 ajouter_donnees=False

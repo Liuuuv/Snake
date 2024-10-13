@@ -19,7 +19,7 @@ inf=float('inf')
 # donnees.recreer_fichier(liste_methodes)
 
 
-## change certains paramètres si l'exécution rapide est activée
+## change certains paramètres si l'éxecution rapide est activée
 if execution_rapide:
     fps=3000
     afficher=False
@@ -31,7 +31,7 @@ if execution_instantanee:
 
 def main():
 
-    heure_debut=time.time()     # pour mesurer le temps d'exécution
+    heure_debut=time.time()
     liste_pas=[]
     dico_taux_raccourcis={}
 

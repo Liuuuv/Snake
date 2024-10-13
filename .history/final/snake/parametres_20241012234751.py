@@ -8,7 +8,7 @@ liste_methodes=['suivre_chemin','raccourcis_croissants_v2','a_etoile_seul','pomm
 nb_cases=8  # nombre de cases sur le côté de la grille carré
 depart_serpent=[0,0]
 nb_iterations=1
-methode='a_etoile_graphe_oriente'
+methode='a_etoile_seulement_si_modif'
 
 ## gestion des données
 ajouter_donnees=False

@@ -3145,7 +3145,7 @@ class  Algorithme:
 
 
 
-    def  a_etoile_oriente(self,fin,liste_pos_murs,prise_en_compte_deplacement):
+    def  a_etoile(self,fin,liste_pos_murs,prise_en_compte_deplacement):
         debut=self.jeu.serpent.pos
         dico_couts={(debut[0],debut[1]):self.distance(debut,fin )}
         dico_poids={(debut[0],debut[1]):0}

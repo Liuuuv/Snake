@@ -3145,22 +3145,27 @@ class  Algorithme:
 
 
 
-    def  a_etoile_oriente(self,fin,liste_pos_murs,prise_en_compte_deplacement):
+    def a_etoile_oriente(self,fin,liste_pos_a_eviter,prise_en_compte_deplacement):
+
         debut=self.jeu.serpent.pos
-        dico_couts={(debut[0],debut[1]):self.distance(debut,fin )}
+        dico_couts={(debut[0],debut[1]):0}
         dico_poids={(debut[0],debut[1]):0}
-        a_traiter=[debut]
-        deja_traites=[]
+        a_traiter=collections.deque([debut])
 
         dico_parents={}
 
-        while  a_traiter!=[]:
-            pos=min(a_traiter,key=lambda p:dico_couts[(p[0],p[1])])
+        vide=collections.deque([])
+
+        while  a_traiter!=vide:
+            pos=min(a_traiter,key=lambda  p:dico_couts[(p[0],p[1])])
             a_traiter.remove(pos)
-            deja_traites.append(pos[:])
+
+            # print(pos)
+
 
             #  si  c'est  fini
             if  pos==fin:
+
                 chemin=[[pos[0],pos[1]]]
                 while  (chemin[-1][0],chemin[-1][1])  in  dico_parents:
                     chemin.append(dico_parents[(chemin[-1][0],chemin[-1][1])])
@@ -3173,6 +3178,8 @@ class  Algorithme:
                     self.jeu.serpent.direction=[chemin[1][0]-debut[0],chemin[1][1]-debut[1]]
                 else:
                     self.jeu.serpent.direction=[fin[0]-debut[0],fin[1]-debut[1]]
+                
+                
 
                 if  self.jeu.serpent.direction==[0,0]:
                     return  False
@@ -3181,18 +3188,22 @@ class  Algorithme:
 
                 return  True
 
+
             liste_voisins=self.dico_adjacence_oriente[(pos[0],pos[1])]
-
-            profondeur=0
-            pos_=[pos[0],pos[1]]
-            while  (pos_[0],pos_[1])  in  dico_parents:
-                profondeur+=1
-                pos_=dico_parents[(pos_[0],pos_[1])]
-
+            # liste_voisins=self.voisins(pos)
+            # print(pos,liste_voisins)
 
             pos_queue=list(self.jeu.serpent.pos_queue)
-
             if prise_en_compte_deplacement:
+                profondeur=0
+                pos_=[pos[0],pos[1]]
+                while  (pos_[0],pos_[1])  in  dico_parents:
+                    profondeur+=1
+                    pos_=dico_parents[(pos_[0],pos_[1])]
+
+
+                
+
                 # si on est sur la pomme
                 if  self.jeu.pomme_atteinte:
                     if  profondeur==0:
@@ -3203,34 +3214,37 @@ class  Algorithme:
                 # si on n'est pas sur la pomme
                 else:
                     pos_queue_predits=pos_queue[(profondeur+1):]
-
-                # print(pos_queue_predits)
             else:
                 pos_queue_predits=pos_queue
+            # print(profondeur)
+
+            # print(pos_queue_predits)
+
+            # pos_queue_predits=pos_queue
+
+
 
             for  voisin  in  liste_voisins:
-                if  not  voisin  in  pos_queue_predits  and  not  voisin  in  liste_pos_murs:
-                    poids=dico_poids[(pos[0],pos[1])]+self.distance(pos,voisin)
-                    cout_f=poids+self.distance(voisin,fin)
+                if  not  voisin  in  pos_queue_predits and not voisin in liste_pos_a_eviter:
+                    cout_g=abs(voisin[0]-debut[0])+abs(voisin[1]-debut[1])
+                    cout_h=abs(voisin[0]-fin[0])+abs(voisin[1]-fin[1])
+                    cout_f=cout_g+cout_h
 
 
-                    if  not  (voisin[0],voisin[1])  in  dico_couts.keys()  or  poids<dico_poids[(voisin[0],voisin[1])]:
-                        
-                        dico_poids[(voisin[0],voisin[1])]=poids
-                        dico_couts[(voisin[0],voisin[1])]=cout_f
-                        
+
+    #  if  not  (voisin[0],voisin[1])  in  dico_profondeurs  or  dico_profondeurs[(pos[0],pos[1])]+1>dico_profondeurs[(voisin[0],voisin[1])]:
+    #      dico_profondeurs[(voisin[0],voisin[1])]=dico_profondeurs[(pos[0],pos[1])]+1
+
+
+                    if  not  (voisin[0],voisin[1])  in  dico_couts  or  cout_f<dico_couts[(voisin[0],voisin[1])]:
+                        a_traiter.append(voisin)
                         dico_parents[(voisin[0],voisin[1])]=pos[:]
-                        
-                        if not voisin in a_traiter:
-                            a_traiter.append(voisin)
-                        
-                    
+                        dico_couts[(voisin[0],voisin[1])]=cout_f
+
+                        #  print(dico_parents)
+
 
         return  False
-    
-    
-    
-            
 
 
     def longueur_plus_court_chemin(self,debut,fin):     # inutile
@@ -3329,6 +3343,7 @@ class  Algorithme:
         deja_traites=[]
 
         dico_parents={}
+        dico_profondeurs={(debut[0],debut[1]):0}
 
         while  a_traiter!=[]:
             pos=min(a_traiter,key=lambda p:dico_couts[(p[0],p[1])])
