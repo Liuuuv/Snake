@@ -118,9 +118,7 @@ class  Algorithme:
 
 
 
-    def generer_chemin_hamiltonien(self) -> None :
-        """Génère un cycle Hamiltonien murable, modifie Algorithme.chemin
-        """
+    def  generer_chemin_hamiltonien(self) -> None :
         self.liste_murs=self.creer_liste_murs([0,0],[])
 
         ajouter=[]
@@ -131,12 +129,7 @@ class  Algorithme:
 
         self.chemin=self.initialiser_chemin_aleatoire(self.liste_murs,[0,0],[1,0])
 
-    def generer_chemin_zig_zag_vertical(self) -> np.ndarray:
-        """Génère le cycle Hamiltonien canonique zigzag vertical
-
-        Returns:
-            np.ndarray: Chemin sous forme matricielle
-        """
+    def  generer_chemin_zig_zag_vertical(self):
         assert  self.affichage.nb_cases%2==0
 
         chemin=np.zeros((self.affichage.nb_cases,self.affichage.nb_cases),dtype=np.uint)
@@ -168,13 +161,9 @@ class  Algorithme:
             pos[1]+=direction[1]
 
         return  chemin
+        #  print(chemin)
 
-    def  generer_chemin_zig_zag_horizontal(self) -> np.ndarray :
-        """Génère le cycle Hamiltonien canonique zigzag horizontal
-
-        Returns:
-            np.ndarray: Chemin sous forme matricielle
-        """
+    def  generer_chemin_zig_zag_horizontal(self):
         assert  self.affichage.nb_cases%2==0
 
         chemin=np.zeros((self.affichage.nb_cases,self.affichage.nb_cases),dtype=np.uint)
@@ -206,11 +195,10 @@ class  Algorithme:
             pos[1]+=direction[1]
 
         return  chemin
+        #  print(chemin)
 
 
-    def mettre_a_jour_listes(self) -> None :      #  pour  avoir  donnees
-        """Met à jour les listes nécessaire à obtenir des donneés : liste_pas
-        """
+    def  mettre_a_jour_listes(self):      #  pour  avoir  donnees
         self.liste_scores.append(self.jeu.score)
         if  self.jeu.score==0:
             self.liste_pas.append(self.jeu.distance_parcourue)
@@ -218,22 +206,17 @@ class  Algorithme:
             self.liste_pas.append(self.jeu.distance_parcourue-sum(self.liste_pas))
             #  print(self.liste_pas,self.jeu.distance_parcourue)
 
+    #  def  mettre_a_jour_matrice_adjacence(self):
+    #      for  i  in  range(self.affichage.nb_cases):
+    #          for  j  in  range(self.affichage.nb_cases):
+    #              if
+    #              self.matrice_adjacence[i,j]
 
 
 
 
-    def initialiser_chemin_aleatoire(self, liste_murs : list, debut : list, direction_initiale : list) -> np.ndarray:
-        """Génère un cycle Hamiltonien murable à partir de murs dans les graphe deux fois plus petit,
-        le but étant de les longer
-
-        Args:
-            liste_murs (list): Positions impossibles à accéder
-            debut (list): _description_
-            direction_initiale (list): _description_
-
-        Returns:
-            np.ndarray: Chemin sous forme matricielle
-        """
+    def  initialiser_chemin_aleatoire(self,liste_murs,debut,direction_initiale):
+        # chemin=np.array([[0  for  _  in  range(self.affichage.nb_cases)]  for  _  in  range(self.affichage.nb_cases)])
         chemin=np.zeros((self.affichage.nb_cases,self.affichage.nb_cases))
 
         n=self.affichage.nb_cases//2
@@ -279,20 +262,13 @@ class  Algorithme:
             pos[0]+=direction[0]
             pos[1]+=direction[1]
 
+            #  print(pos,  direction)
             compteur+=1
             chemin[pos[1]][pos[0]]=compteur
 
         return chemin
 
-    def voisins_petite_grille(self, pos : list) -> list:
-        """Renvoie la liste des voisins d'une position donnée
-
-        Args:
-            pos (list): Position
-
-        Returns:
-            list: Liste des voisins de pos dans la grille deux fois plus petite
-        """
+    def  voisins_petite_grille(self,pos):
         liste_voisins=[]
         for  j  in  range(-1,2):
             for  i  in  range(-1,2):
@@ -302,16 +278,7 @@ class  Algorithme:
         return liste_voisins
 
 
-    def creer_liste_murs(self, debut : list, pos_petite_grille_a_eviter : list) -> list:
-        """Génère une liste de murs (listes) en évitant une liste de positions à éviter dans la petite grille
-
-        Args:
-            debut (list): Position de départ
-            pos_petite_grille_a_eviter (list): Positions interdites dans la petite grille
-
-        Returns:
-            list: Liste de murs retournée
-        """
+    def  creer_liste_murs(self,debut,pos_petite_grille_a_eviter):
         a_traiter=[debut[:]]    #  point  de  départ
         deja_traites=[]
         liste_murs=[]
@@ -351,23 +318,13 @@ class  Algorithme:
     #      for  i  in  range(len(self.liste_tracer)-1):
     #          py.draw.line(self.affichage.fenetre,noir,self.liste_tracer[i],self.liste_tracer[i+1])
 
-    def tracer_murs(self, liste_aretes : list) -> None:
-        """Trace les murs à l'écran
-
-        Args:
-            liste_aretes (list): Liste des arêtes à tracer
-        """
+    def  tracer_murs(self,liste_aretes):
         coef=self.affichage.taille_case*2
         offset=(self.affichage.taille_case,self.affichage.taille_case)
         for  couple  in  liste_aretes:
             py.draw.line(self.affichage.fenetre,rouge,[offset[0]+couple[0][0]*coef,offset[1]+couple[0][1]*coef],[offset[0]+couple[1][0]*coef,offset[1]+couple[1][1]*coef],5)
 
-    def initialiser_dico_adjacence_oriente(self) -> dict:
-        """Génère le dictionnaire d'adjacence du graphe grille
-
-        Returns:
-            dict: Dictionnaire d'adjacence
-        """
+    def initialiser_dico_adjacence_oriente(self):
         dico={}
         for j in range(self.affichage.nb_cases):
             for i in range(self.affichage.nb_cases):
@@ -389,21 +346,11 @@ class  Algorithme:
         return dico
 
 
-    def mettre_a_jour_direction(self, nom_fonction : str) -> None:
-        """Fonction pour mettre à jour la direction du serpent à chaque itération
-
-        Args:
-            nom_fonction (str): Nom de la méthode de résolution utilisée
-        """
+    def mettre_a_jour_direction(self,nom_fonction):
         fonction=getattr(Algorithme,nom_fonction)
         fonction(self)
     
-    def generer_deux_facteur(self) -> dict:     # des deux facteurs peuvent etre inclus dans le cors du serpent ou dans la boucle que forme le corps
-        """Génère un 2-facteur
-
-        Returns:
-            dict: 2-facteur
-        """
+    def generer_deux_facteur(self):     # des deux facteurs peuvent etre inclus dans le cors du serpent ou dans la boucle que forme le corps
         heure_debut=time.time()
         graphe_transforme=outils.graphe_transforme(self.affichage.nb_cases)
         print('graphe_transforme',time.time()-heure_debut)
@@ -469,15 +416,7 @@ class  Algorithme:
 
         return dico_adjacence
     
-    def generer_liste_aretes_depuis_dico_adjacence(self, dico_adjacence : dict) -> list:
-        """Génère une liste d'arêtes depuis un dictionnaire d'adjacence
-
-        Args:
-            dico_adjacence (dict): Dictionnaire d'adjacence
-
-        Returns:
-            list: Liste d'arêtes
-        """
+    def generer_liste_aretes_depuis_dico_adjacence(self,dico_adjacence):
         heure_debut=time.time()
         liste_aretes=[]
         for pos in dico_adjacence.keys():
@@ -491,12 +430,7 @@ class  Algorithme:
         
         return liste_aretes
 
-    def souder_deux_facteur(self, dico_adjacence_deux_facteur :  dict) -> None:
-        """Soude un 2-facteur pour obtenir un cycle Hamiltonien
-
-        Args:
-            dico_adjacence_deux_facteur (dict): Dictionnaire d'adjacence du 2-facteur
-        """
+    def souder_deux_facteur(self,dico_adjacence_deux_facteur):
         ensemble_boucles=self.ensemble_boucles_depuis_dico_adjacence(dico_adjacence_deux_facteur)
         if not self.modifier_cycle(ensemble_boucles):
             # print('2-facteur non modifiable')
@@ -553,9 +487,7 @@ class  Algorithme:
 
 
     """raccourci  croissant  dans  tous  les  cas  (v2  de  raccourci  croissant  seulement)"""  #  ok
-    def raccourcis_croissants_v2(self) -> None:
-        """Raccourci croissant dans tous les cas
-        """
+    def raccourcis_croissants_v2(self):
 
 
         # # pour optimiser
@@ -605,9 +537,8 @@ class  Algorithme:
     
 
     """raccourci  croissant  dans  tous  les  cas, on considere la queue"""
-    def raccourcis_croissants_v3(self) -> None: # faire qu'on peut inverser la numerotation
-        """On consdière la queue
-        """
+    def raccourcis_croissants_v3(self): # faire qu'on peut inverser la numerotation
+
 
         # # pour optimiser
         # if  self.jeu.score>=9*(self.affichage.nb_cases**2)//20:
@@ -664,9 +595,7 @@ class  Algorithme:
         # print()
     
     """raccourci  croissant  dans  tous  les  cas osef"""
-    def raccourcis_croissants_v3(self) -> None: # faire qu'on peut inverser la numerotation
-        """oui
-        """
+    def raccourcis_croissants_v3(self): # faire qu'on peut inverser la numerotation
 
 
         # # pour optimiser
@@ -731,9 +660,8 @@ class  Algorithme:
 
 
     """A* avec projection sur queue"""
-    def a_etoile_projection_queue(self) -> None:    #  regarder  tout  les  plus  courts  chemins!!!!, ou faire que A* ne fait pas de trous
-        """A* mais on suit le chemin seulement si on peut revenir sur la queue après avoir mangé la pomme
-        """
+    def  a_etoile_projection_queue(self):    #  regarder  tout  les  plus  courts  chemins!!!!, ou faire que A* ne fait pas de trous
+
         if self.jeu.distance_parcourue>=1300:
             self.jeu.fin_jeu=True
             self.jeu.etat_partie=-1
@@ -803,9 +731,7 @@ class  Algorithme:
     
 
     """A* sur graphe oriente"""
-    def a_etoile_graphe_oriente(self) -> None:
-        """A* sur le graphe orienté
-        """
+    def a_etoile_graphe_oriente(self):
 
         if self.jeu.distance_parcourue==0:
             self.a_etoile_oriente(self.jeu.pomme.pos,[],True)
@@ -947,21 +873,10 @@ class  Algorithme:
         self.suivre_chemin_particulier(self.plus_court_chemin)
         # self.mettre_a_jour_plus_court_chemin(self.plus_court_chemin)
     
-    def a_etoile_graphe_oriente_cout(self) -> None:
-        """oui
-        """
+    def a_etoile_graphe_oriente_cout(self):
         self.a_etoile_oriente_sans_grille_coupee(self.jeu.pomme.pos,[],True)
 
-    def pos_direction_compatibles(self, pos : list, direction : list) -> list:
-        """oui
-
-        Args:
-            pos (list): Position
-            direction (list): Direction
-
-        Returns:
-            list: Liste
-        """
+    def pos_direction_compatibles(self,pos,direction):
         if direction==[1,0]:
             return pos[0]%2==0
         elif direction==[0,1]:
@@ -1138,8 +1053,6 @@ class  Algorithme:
 
     'a_etoile_graphe_oriente_hami'
     def a_etoile_graphe_oriente_hami(self):   # CHANGER QU'ON REGARDE TOUT LE TEMPS PLUS COURT CHEMIN DANS L AUTRE CODE??
-        """oui
-        """
         score_limite=40
         
         if self.jeu.distance_parcourue==0:
@@ -1280,20 +1193,7 @@ class  Algorithme:
         else:
             self.suivre_chemin()
     
-    def liste_aretes_petite_grille(self, pos : list, pos_debut : list, direction_initiale : list,liste_pos_petite_grille_occupees : list, pos_petite_grille_traites : list) -> list:
-        """Renvoie la liste d'arêtes dans la petite grille
-
-        Args:
-            pos (list): _description_
-            pos_debut (list): _description_
-            direction_initiale (list): _description_
-            liste_pos_petite_grille_occupees (list): _description_
-            pos_petite_grille_traites (list): _description_
-
-        Returns:
-            _type_: list
-            
-        """
+    def liste_aretes_petite_grille(self,pos,pos_debut,direction_initiale,liste_pos_petite_grille_occupees,pos_petite_grille_traites):
         liste_aretes=[]
 
 
@@ -1378,17 +1278,7 @@ class  Algorithme:
 
         return liste_aretes
     
-    def contour_liste_aretes(self, liste_aretes : list, pos_debut : list, direction_initiale : list):    # convention: rotation trigo
-        """Renvoie le chemin (sous forme de liste) qui fait le contour de la liste d'arêtes
-
-        Args:
-            liste_aretes (list): Liste d'arêtes
-            pos_debut (list): _description_
-            direction_initiale (list): _description_
-
-        Returns:
-            _type_: _description_
-        """
+    def contour_liste_aretes(self,liste_aretes,pos_debut,direction_initiale):    # convention: rotation trigo
         n=self.affichage.nb_cases//2
 
         pos=pos_debut[:]
@@ -1454,9 +1344,7 @@ class  Algorithme:
     
         
     'arbre_raccourcis_modifier_hami'
-    def arbre_raccourcis_modifier_hami(self) -> None:
-        """oui
-        """
+    def arbre_raccourcis_modifier_hami(self):
 
         if self.jeu.score==0:
             self.a_etoile_seul()
@@ -1473,13 +1361,13 @@ class  Algorithme:
             liste_pos_queue=list(self.jeu.serpent.pos_queue)
 
             a_traiter=[(
-                abs(self.jeu.pomme.pos[0]-pos[0])+abs(self.jeu.pomme.pos[1]-pos[1]),
-                pos[:],
-                liste_pos_queue,
-                self.chemin.copy(),
-                [pos[:]],
-                0,
-                0)]    # pos,liste_pos_queue,cycle_hami,chemin_emprunte,nb_raccourcis,nb_modifications
+                                          abs(self.jeu.pomme.pos[0]-pos[0])+abs(self.jeu.pomme.pos[1]-pos[1]),
+                                          pos[:],
+                                          liste_pos_queue,
+                                          self.chemin.copy(),
+                                          [pos[:]],
+                                          0,
+                                          0)]    # pos,liste_pos_queue,cycle_hami,chemin_emprunte,nb_raccourcis,nb_modifications
             a_regarder=[]
 
             profondeur=0
@@ -1570,16 +1458,7 @@ class  Algorithme:
 
         # print('chemin_opti',self.chemin_optimal)
     
-    def pos_suivante_selon_cycle_hami(self, pos : list, cycle_hami : np.ndarray) -> list:
-        """Trouve la position suivant selon un cycle Hamiltonien
-
-        Args:
-            pos (list): Position actuelle
-            cycle_hami (np.ndarray): Cycle Hamiltonien sous forme matricielle
-
-        Returns:
-            list: Position suivante
-        """
+    def pos_suivante_selon_cycle_hami(self,pos,cycle_hami):
         numero_suivant=int(cycle_hami[pos[1],pos[0]])+1
         
         #  dir_0=[0,0]
@@ -1592,17 +1471,7 @@ class  Algorithme:
                     if  int(cycle_hami[pos[1]+i,pos[0]+j])==numero_suivant:
                         return [pos[0]+j,pos[1]+i]
     
-    def peut_prendre_raccourci(self, pos : list, pos_suivante : list, cycle_hami : np.ndarray) -> bool:
-        """Détermine si on peut prendre le raccourci (pos, pos_suivante) ou non
-
-        Args:
-            pos (list): Position actuelle
-            pos_suivante (list): Position désirée
-            cycle_hami (np.ndarray): Cycle Hamiltonien
-
-        Returns:
-            bool: Réponse
-        """
+    def peut_prendre_raccourci(self,pos,pos_suivante,cycle_hami):
         numero_pos=int(cycle_hami[pos[1],pos[0]])
         numero_pos_suivante=(int(cycle_hami[pos_suivante[1],pos_suivante[0]])-numero_pos)%(self.affichage.nb_cases**2)
 
@@ -1614,9 +1483,7 @@ class  Algorithme:
         
         return False
 
-    def peut_modifier_cycle(self, pos : list, voisin : list, liste_pos_queue : list, cycle_hami : np.ndarray) -> tuple[bool, np.ndarray]:
-        """Oui
-        """
+    def peut_modifier_cycle(self,pos,voisin,liste_pos_queue,cycle_hami):
 
         self.pos_boucle_1=[]
         self.pos_boucle_2=[]
@@ -1629,7 +1496,7 @@ class  Algorithme:
 
         
         if difference_numero in [-1,0,1,self.affichage.nb_cases**2-1]:
-            return  False,np.array([])
+            return  False,[]
 
 
 
@@ -1707,17 +1574,23 @@ class  Algorithme:
 
             pos_[:]=pos_suivante[:]
 
-        
+        """s'en occuper"""
+        def pos_depuis_numero(numero):
+            for  i  in  range(self.affichage.nb_cases):
+                for  j  in  range(self.affichage.nb_cases):
+                    if  int(cycle_hami[i][j])==numero:
+                        return([j,i])
+            print('pos_depuis_numero local, pas trouvé la pos')
         #  si  les  deux  boucles  ne  sont  pas  faites  au  bon  endroit
         if  len(self.jeu.serpent.pos_queue)==0:
 
 
             if  abs(pos_boucle_2[0][0]-pos_boucle_2[-1][0])  not  in  [0,1]  or  abs(pos_boucle_2[0][1]-pos_boucle_2[-1][1])  not  in  [0,1]:
                 #  print(difference(pos_boucle_2[-1][0],pos_boucle_2[-1][1]))
-                pos_boucle_1.remove(self.pos_depuis_numero(numero_actuel,cycle_hami))
-                pos_boucle_1.remove(self.pos_depuis_numero(numero_desire,cycle_hami))
-                pos_boucle_2.insert(0,self.pos_depuis_numero(min(numero_actuel,numero_desire),cycle_hami))
-                pos_boucle_2.append(self.pos_depuis_numero(max(numero_actuel,numero_desire),cycle_hami))
+                pos_boucle_1.remove(pos_depuis_numero(numero_actuel))
+                pos_boucle_1.remove(pos_depuis_numero(numero_desire))
+                pos_boucle_2.insert(0,pos_depuis_numero(min(numero_actuel,numero_desire)))
+                pos_boucle_2.append(pos_depuis_numero(max(numero_actuel,numero_desire)))
 
                 # print('correction')
 
@@ -1730,21 +1603,21 @@ class  Algorithme:
         #  on  verifie  que  les  deux  boucles  sont  bien  des  boucles
         if  abs(pos_boucle_2[0][0]-pos_boucle_2[-1][0])  not  in  [0,1]  or  abs(pos_boucle_2[0][1]-pos_boucle_2[-1][1])  not  in  [0,1]:
             # print('boucle 2 pas boucle')
-            return  False,np.array([])
+            return  False,[]
 
         if  abs(pos_boucle_1[0][0]-pos_boucle_1[-1][0])  not  in  [0,1]  or  abs(pos_boucle_1[0][1]-pos_boucle_1[-1][1])  not  in  [0,1]:
             # print('boucle 1 pas boucle')
-            return  False,np.array([])
+            return  False,[]
 
         for  i  in  range(len(pos_boucle_1)-1):
             if  pos_boucle_1[i]  not  in  self.voisins(pos_boucle_1[i+1]):
                 # print('boucle 1 pas boucle')
-                return  False,np.array([])
+                return  False,[]
 
         for  i  in  range(len(pos_boucle_2)-1):
             if  pos_boucle_2[i]  not  in  self.voisins(pos_boucle_2[i+1]):
                 # print('boucle 2 pas boucle')
-                return  False,np.array([])
+                return  False,[]
 
         # return
 
@@ -1790,7 +1663,7 @@ class  Algorithme:
 
         if  depart_arrivee_1==[]:
             # print('pas  boucle')
-            return  False,np.array([])
+            return  False,[]
 
         #  on  reindice
         pos=[0,0]
@@ -1819,28 +1692,21 @@ class  Algorithme:
         # self.affichage.liste_aretes_cycle=self.affichage.initialiser_liste_aretes_cycle()
 
         return  True,cycle_hami
-    
-    
-    def pos_petite_grille(self, pos : list) -> list:
-        """Renvoie la position dans la petite grille
 
-        Args:
-            pos (list): Position
 
-        Returns:
-            list: Position dans la petite grille
-        """
+            
+
+
+        
+
+         
+    
+
+
+    def pos_petite_grille(self,pos):
         return [outils.composante_petite_grille(pos[0]),outils.composante_petite_grille(pos[1])]
 
-    def direction_gauche(self, direction : list) -> list:
-        """Renvoie la direction d'un quart de tour à gauche
-
-        Args:
-            direction (list): Direction
-
-        Returns:
-            list: Direction tournée
-        """
+    def direction_gauche(self,direction):
         if direction==[0,1]:
             return [1,0]
         elif direction==[0,-1]:
@@ -1850,15 +1716,7 @@ class  Algorithme:
         elif direction==[-1,0]:
             return [0,1]
 
-    def direction_droite(self, direction : list) -> list:
-        """Renvoie la direction d'un quart de tour à droite
-
-        Args:
-            direction (list): Direction
-
-        Returns:
-            list: Direction tournée
-        """
+    def direction_droite(self,direction):
         if direction==[0,1]:
             return [-1,0]
         elif direction==[0,-1]:
@@ -1868,15 +1726,7 @@ class  Algorithme:
         elif direction==[-1,0]:
             return [0,-1]
 
-    def direction_suivante_cellule(self, pos_cellule : list) -> list:
-        """oui
-
-        Args:
-            pos_cellule (list): _description_
-
-        Returns:
-            list: _description_
-        """
+    def direction_suivante_cellule(self,pos_cellule):
         if pos_cellule==[0,0]:
             return [0,1]
         elif pos_cellule==[0,1]:
@@ -1886,26 +1736,15 @@ class  Algorithme:
         elif pos_cellule==[1,0]:
             return [-1,0]
     
-    def distance(self, pos1 : list, pos2 : list) -> int:
-        """Renvoie la distance Manhattan entre deux positions
-
-        Args:
-            pos1 (list): _description_
-            pos2 (list): _description_
-
-        Returns:
-            int: Distance Manhattan entre les deux positions
-        """
+    def distance(self,pos1,pos2):
         return abs(pos2[0]-pos1[0])+abs(pos2[1]-pos1[1])
 
 
 
-    def parcours_cellules(self) -> None:
-        """oui
-        """
+    def parcours_cellules(self):
         
-        # reste dans les cellules (2,2), sens de rotation: trigo, on voit  ça comme un arbre, on ne aller que là où on n'a pas exploré
-        # ou sur le parent
+        """reste dans les cellules (2,2), sens de rotation: trigo, on voit  ça comme un arbre, on ne aller que là où on n'a pas exploré
+        ou sur le parent"""
 
         pos_petite_grille=self.pos_petite_grille(self.jeu.serpent.pos)
 
@@ -2001,9 +1840,7 @@ class  Algorithme:
         print(self.dico_arbre)
     
 
-    def parent(self, enfant : list) -> list:
-        """Renvoie un parent de enfant pour Algorithme.dico_arbre
-        """
+    def parent(self,enfant):
         for parent in self.dico_arbre:
             if self.dico_arbre[parent]==enfant:
                 return [parent[0],parent[1]]
@@ -2016,7 +1853,7 @@ class  Algorithme:
 
 
     """Monté Carlo tree search"""
-    def monte_carlo_tree_search(self): # foireux
+    def monte_carlo_tree_search(self):
         nb_essais=1000
         profondeur_max=int(self.affichage.nb_cases)
 
@@ -2116,7 +1953,7 @@ class  Algorithme:
 
 
     """A*  que  si  modification"""  #  modifier_cyle  à  reparer..
-    def  a_etoile_seulement_si_modif(self) -> None:
+    def  a_etoile_seulement_si_modif(self):
         
         # pour boucles
         if self.jeu.distance_parcourue>=1300:
@@ -2153,7 +1990,7 @@ class  Algorithme:
         
 
 
-        # POUR SOUDER 2 FACTEURS
+        """ POUR SOUDER 2 FACTEURS
         dico_adjacence_deux_facteur=self.generer_deux_facteur()
         self.liste_aretes_deux_facteur=self.generer_liste_aretes_depuis_dico_adjacence(dico_adjacence_deux_facteur)
         if dico_adjacence_deux_facteur!={}:
@@ -2163,7 +2000,7 @@ class  Algorithme:
             # print('PAS DE DEUX FACTEUR')
 
         # self.affichage.liste_aretes_cycle
-        
+        """
 
 
     """rien"""

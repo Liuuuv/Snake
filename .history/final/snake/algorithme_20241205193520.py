@@ -731,7 +731,7 @@ class  Algorithme:
 
 
     """A* avec projection sur queue"""
-    def a_etoile_projection_queue(self) -> None:    #  regarder  tout  les  plus  courts  chemins!!!!, ou faire que A* ne fait pas de trous
+    def  a_etoile_projection_queue(self) -> None:    #  regarder  tout  les  plus  courts  chemins!!!!, ou faire que A* ne fait pas de trous
         """A* mais on suit le chemin seulement si on peut revenir sur la queue après avoir mangé la pomme
         """
         if self.jeu.distance_parcourue>=1300:
@@ -2153,7 +2153,7 @@ class  Algorithme:
         
 
 
-        # POUR SOUDER 2 FACTEURS
+        """ POUR SOUDER 2 FACTEURS
         dico_adjacence_deux_facteur=self.generer_deux_facteur()
         self.liste_aretes_deux_facteur=self.generer_liste_aretes_depuis_dico_adjacence(dico_adjacence_deux_facteur)
         if dico_adjacence_deux_facteur!={}:
@@ -2163,7 +2163,7 @@ class  Algorithme:
             # print('PAS DE DEUX FACTEUR')
 
         # self.affichage.liste_aretes_cycle
-        
+        """
 
 
     """rien"""

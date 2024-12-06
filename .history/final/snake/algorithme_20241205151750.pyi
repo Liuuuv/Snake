@@ -1,0 +1,3 @@
+class Algorithme:
+    def generer_chemin_hamiltonien(self) -> None : ...
+    def generer_chemin_zig_zag_vertical()
